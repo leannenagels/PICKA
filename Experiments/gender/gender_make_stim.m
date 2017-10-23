@@ -74,6 +74,8 @@ end
 %--------------------------------------------------------------------------
 function [y, fs] = straight_process(word, nb_st, vtl, d, options)
 
+    addpath(options.path.straight)
+    addpath(options.path.tools)
     wavIn = fullfile(options.sound_path, [word, '.wav']);
     wavOut = make_fname(wavIn, nb_st, vtl, d, options.tmp_path);
 
@@ -82,7 +84,7 @@ function [y, fs] = straight_process(word, nb_st, vtl, d, options)
 %     rebuilding?
     if ~exist(wavOut, 'file')
 
-        addpath(options.straight_path);
+%         addpath(options.path.straight);
 
         mat = strrep(wavIn, '.wav', '.straight.mat');
         
@@ -128,9 +130,11 @@ function [y, fs] = straight_process(word, nb_st, vtl, d, options)
         
         audiowrite(wavOut, y, fs);
 
-        rmpath(options.straight_path);
+        rmpath(options.path.straight);
+        rmpath(options.path.tools);
     else
         [y, fs] = audioread(wavOut);
     end
+
 
 end

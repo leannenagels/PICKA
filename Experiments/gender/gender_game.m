@@ -1,6 +1,15 @@
 function [G, TVScreen, Buttonup, Buttondown, Speaker, gameCommands, Hands] = gender_game(options)
 
-    addpath(options.straight_path);
+%     addpath(options.straight_path);
+
+paths2Add = {options.path.spritekit, options.path.tools, options.path.straight}; 
+for ipath = 1 : length(paths2Add)
+    if ~exist(paths2Add{ipath}, 'dir')
+        error([paths2Add{ipath} ' does not exists, check the ../']);
+    else
+        addpath(paths2Add{ipath});
+    end
+end
 
     [screen1, screen2] = getScreens();
 %   fprintf('Experiment will displayed on: [%s]\n', sprintf('%d ', screen2));
@@ -10,7 +19,7 @@ function [G, TVScreen, Buttonup, Buttondown, Speaker, gameCommands, Hands] = gen
     G = SpriteKit.Game.instance('Title','Gender Game', ...
         'Size', [screen2(3), screen2(4)], 'Location', screen2(1:2), ...
         'ShowFPS', false);
-
+    
 %     SpriteKit.Background([options.locationImages 'genderbackground3_unscaled.png');
 %     SpriteKit.Background([options.locationImages 'genderbackgroundleanne_unscaled.png']);
     SpriteKit.Background(resizeBackgroundToScreenSize(screen2, [options.locationImages 'genderbackgroundleanne_scaled.png']));
@@ -43,8 +52,8 @@ function [G, TVScreen, Buttonup, Buttondown, Speaker, gameCommands, Hands] = gen
     Speaker.initState ('off', ones(1,1,3), true);
     Speaker.initState ('TVSpeaker_1', [options.locationImages '' 'TVSpeaker_1' '.png'], true);
     Speaker.initState ('TVSpeaker_2', [options.locationImages '' 'TVSpeaker_2' '.png'], true);
-    Speaker.Location = [screen2(3)/1.73, screen2(4)/1.91];
-    Speaker.Location = [screen2(3)/1.59, screen2(4)/1.91];
+    Speaker.Location = [screen2(3)/1.6, screen2(4)/2.2];
+    Speaker.Location = [screen2(3)/1.6, screen2(4)/2.2];
     Speaker.State = 'TVSpeaker_1';
     
     Buttonup = SpriteKit.Sprite ('buttonup');
@@ -129,4 +138,8 @@ function [G, TVScreen, Buttonup, Buttondown, Speaker, gameCommands, Hands] = gen
     Hands.State = 'off';
     % Hands.Location = [screen2(3)/6.5, screen2(4)/4.5]; % for handremote
 
+    for ipath = 1 : length(paths2Add)
+        rmpath(paths2Add{ipath});
+    end
+    
 end

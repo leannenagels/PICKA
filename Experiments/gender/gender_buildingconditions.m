@@ -1,33 +1,35 @@
 function [expe, options] = gender_buildingconditions(options)
 
-    %----------- Signal options
-    options.fs = 44100;
-    if is_test_machine
-        options.attenuation_dB = 3;  % General attenuation
-    else
-        options.attenuation_dB = 27; % General attenuation
-    end
-    options.ear = 'both'; % right, left or both
+addpath(options.path.tools)
 
-    %----------- Design specification
-    options.test.n_repeat = 1; % Number of repetition per condition
-    options.test.retry = 1; % Number of retry if measure failed
+%----------- Signal options
+options.fs = 44100;
+if is_test_machine
+    options.attenuation_dB = 3;  % General attenuation
+else
+    options.attenuation_dB = 27; % General attenuation
+end
+options.ear = 'both'; % right, left or both
+
+%----------- Design specification
+options.test.n_repeat = 1; % Number of repetition per condition
+options.test.retry = 1; % Number of retry if measure failed
     
 
     %  training
     %  added training, maybe for young kids good to see if they understand
 
-    % -------- Stimuli options
-    if options.Bert
-        options.test.f0s = [0 -3 -6 -9 -12]; % adults version
-        options.test.vtls = [0 .7 1.6 2.4 3 3.6]; % adults version
-    else
-        options.test.f0s = [0 -6 -12]; % kids version
-        options.test.vtls = [0 1.8 3.6]; % kids version
-    end
-    nF0 = length(options.test.f0s);
-    
-    nVtls = length(options.test.vtls);
+% -------- Stimuli options
+% if options.Bert
+%     options.test.f0s = [0 -3 -6 -9 -12]; % adults version
+%     options.test.vtls = [0 .7 1.6 2.4 3 3.6]; % adults version
+% else
+options.test.f0s = [0 -6 -12]; % kids version
+options.test.vtls = [0 1.8 3.6]; % kids version
+% end
+nF0 = length(options.test.f0s);
+
+nVtls = length(options.test.vtls);
     
 
 
@@ -44,10 +46,10 @@ function [expe, options] = gender_buildingconditions(options)
      else
         switch options.language
 %             case 'Dutch'
-            case 'dutch'
+            case 'nl_nl'
                 word_list = {'Bus', 'Leeg', 'Pen', 'Vaak'};
 %             case 'English'
-            case 'english'
+            case 'en_gb'
                 word_list = {'bike', 'hat', 'pool', 'watch'};
         end
      end
@@ -130,10 +132,13 @@ function [expe, options] = gender_buildingconditions(options)
         expe.test.trials = test.trials(randperm(length(test.trials)));
      end
     
+     
     if isfield(options, 'res_filename')
         save(options.res_filename, 'options', 'expe');
     else
         warning('The test file was not saved: no filename provided.');
     end
+    
+    rmpath(options.path.tools);
 end
 
