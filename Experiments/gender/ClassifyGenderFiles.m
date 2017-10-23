@@ -1,6 +1,7 @@
 function gendervoices = ClassifyGenderFiles(soundDir)
 
-gendervoices = dir([soundDir '*.wav']);
+%gendervoices = dir([soundDir '*.wav']);
+gendervoices = dir([options.soundDir '*.wav']);
 % filename = 01NVA01_F0_3_SEx081.wav (= example) 
 nFile = length (gendervoices);
 

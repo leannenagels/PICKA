@@ -1,4 +1,6 @@
-[x, fs] = wavread('/Users/denizbaskent/Sounds/NVA/equalized/Baai.wav');
+
+
+[x, fs] = audioread('C:/Users/leann/Resources/sounds/NVA/gender/equalized/Bus.wav');
 
 x = x(:,1);
 
