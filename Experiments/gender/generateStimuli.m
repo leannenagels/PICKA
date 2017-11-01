@@ -1,7 +1,7 @@
-function generateStimuli(options, phase)
+function generateStimuli(options)
     
     % remove all the generated files:
-    % sound files, wav files, response structure
+    % sound files, wav files
     
     delete(options.res_filename);
     

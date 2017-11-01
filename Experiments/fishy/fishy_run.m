@@ -5,8 +5,7 @@ function progress = fishy_run(participant)
 % test. 
 
 rng('shuffle')
-run('../guiParticipantDetails.m')
-participant=ans;
+%run('../defineParticipantDetails.m')
 
 options = fishy_options(struct(), participant);
 

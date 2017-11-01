@@ -18,6 +18,7 @@ options.target_corpus_path = ['../../Resources/sounds/CRM/spk1F-', options.targe
 options.target_corpus_filemask = 'dog_*.wav';
 % To only use certain colours, use something like:
 % options.target_corpus_filemask = {'dog_yellow_*.wav', 'dog_black_*.wav'};
+% ... Or move the unused files to a subdirectory of the sounds folder (thank you Leanne :) )
 
 options.target_corpus = parse_corpus(options.target_corpus_path, options.target_corpus_filemask);
 
@@ -54,35 +55,35 @@ end
 
 options.n_voices = length(options.voices);
 
-% The smallest RMS of normalized en_gb corpus is 0.0823
-% The smallest RMS of normalized nl_nl corpus is 0.0856
-% We chose as reference RMS 0.0823/sqrt(2) so that Target and Masker can be
-% added at 0 dB TMR without clipping
-
-options.reference_rms = 0.0823/sqrt(2);
-% For TMR>0, this is the RMS of the target
-% For TMR<0, this is the RMS of the masker
-
 % The gain needs to be adjusted for calibration
-% What is adjusted is the reference RMS
-options.gain = -21+1.2; % Calibrated to 65 dB SPL for Sennheiser HD600, with KEMAR head assembly + Svantek SLM on 07/08/2017
+options.gain = -44.5; % Calibrated to 65 dB SPL for Sennheiser HD600, with KEMAR head assembly + Svantek SLM on 07/08/2017
+% The gain is applied in expe_main(). To avoid clipping, given the current
+% material (2017-10-11), the gain should be at most -25.
 
-options.tmrs = [-5, 0, 5];
+options.tmrs = [-5, 0, 5]; % for NH
+%options.tmrs = [0, 5, 10]; % for CI
+
+% Strategy on how to change the TMR:
+% - In the 'louder_constant' strategy, the TMR is such that we keep the target level constant
+%   for TMRs>0, and the masker level constant for TMRs<0
+% - In the 'constant_level' strategy, we keep the overall level constant
+options.tmr_strategy = 'constant_level';
+
 options.target_delay = 750e-3;
 options.masker_end_delay = 250e-3;
-options.masker_min_chunk_duration = 250e-3;
-options.masker_max_chunk_duration = 500e-3;
+options.masker_min_chunk_duration = 150e-3;
+options.masker_max_chunk_duration = 300e-3;
 options.masker_chunk_ramp = 2e-3;
 options.masker_ramp = 50e-3;
 
 options.test.n_repeat = 7;
 options.training.n_repeat = 1;
 
-%change block size for breaks
+% change block size for breaks
 options.training.block_size = 20;
 options.test.block_size = 20;
 
-%options.ear = 'both';
+%options.ear = 'both'; % No ear option used in expe_make_stim...
 
 %------ Testing block
 

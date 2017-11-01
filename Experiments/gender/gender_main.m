@@ -10,28 +10,26 @@ function gender_main(expe, options, phase)
     end
 
     %% ------------- Game
-    if (mean([expe.(phase).trials.done])~=1)
-        [G, TVScreen, Buttonup, Buttondown, Speaker, gameCommands, Hands] = gender_game(options);
-        G.onMouseRelease = @buttondownfcn;
-        G.onKeyPress = @keypressfcn;
-    else
-        if ~strcmp(options.subject_name, 'test');
-            resultsFiles = dir([options.result_path '/*.mat']);
-            nRep = length(resultsFiles) - sum(cellfun('isempty', regexp({resultsFiles.name}, options.subject_name)));
-            nRep = nRep + 1;
-            options.subject_name  = sprintf('%s%s_%02.0f.mat', options.result_prefix, options.subject_name, nRep);
-            options.res_filename = fullfile(options.result_path, options.subject_name);
-            [G, TVScreen, Buttonup, Buttondown, Speaker, gameCommands, Hands] = gender_game(options);
-            G.onMouseRelease = @buttondownfcn;
-            G.onKeyPress = @keypressfcn;
-        end
+    if (mean([expe.(phase).trials.done])==1) && ~strcmp(options.subject_name, 'test') % EG: we only to this if this is 'test'
+        resultsFiles = dir(fullfile(options.result_path, '/*.mat'));
+        nRep = length(resultsFiles) - sum(cellfun('isempty', regexp({resultsFiles.name}, options.subject_name)));
+        nRep = nRep + 1;
+        options.subject_name  = sprintf('_%s%s_%02.0f.mat', options.result_prefix, 'test', nRep);
+        options.res_filename = fullfile(options.result_path, options.subject_name);
+        
         [expe, options] = gender_buildingconditions(options);
     end
+    [G, TVScreen, Buttonup, Buttondown, Speaker, gameCommands, Hands] = gender_game(options);
+    G.onMouseRelease = @buttondownfcn;
+    G.onKeyPress = @keypressfcn;
 
 %=============================================================== MAIN LOOP
     while mean([expe.(phase).trials.done])~=1 % Keep going while there are some trials to do
     
-     
+        requested_volume = 10^(-options.attenuation_dB/20);
+        options.sound_volume = SoundVolume(requested_volume);
+        fprintf('Stimuli presented at %.2f%% of the volume (%.1f dB re. max).\n', options.sound_volume*100, 20*log10(options.sound_volume));
+
         if autoplayer 
             starting = 1;
             gameCommands.State = 'empty';

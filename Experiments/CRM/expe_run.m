@@ -16,6 +16,15 @@ if nargin<3
     language = 'nl_nl';
 end
 
+options = expe_options();
+
+%-------------------------------------------------
+
+addpath(options.path.straight);
+addpath(options.path.tools);
+
+%-------------------------------------------------
+
 language = normalize_language(language);
 
 switch language
@@ -32,11 +41,6 @@ options.language = language;
 options = expe_options(options);
 
 options.subject_name  = subject;
-
-%-------------------------------------------------
-
-addpath(options.path.straight);
-addpath(options.path.tools);
 
 %-------------------------------------------------
 

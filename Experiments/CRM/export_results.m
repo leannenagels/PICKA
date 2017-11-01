@@ -1,6 +1,10 @@
 function export_filename = export_results(fmt)
 
-ref_options = fishy_options();
+if nargin<1
+    fmt = 'sql';
+end
+
+ref_options = expe_options();
 
 lst = dir(fullfile(ref_options.result_path, [ref_options.result_prefix, '*.mat']));
 files = { lst.name };
@@ -8,7 +12,7 @@ files = { lst.name };
 last_filedate = most_recent_filedate(lst);
 
 switch fmt
-    case 'sqlite'
+    case {'sqlite', 'sql'}
         export_filename = fullfile(ref_options.result_path, [ref_options.result_prefix, 'db.sqlite']);
         
         %-- Check if we need to regenerate the database
@@ -26,29 +30,29 @@ switch fmt
         mksqlite('PRAGMA journal_mode=OFF');
         
         %-- Tables creation
-        mksqlite('DROP TABLE IF EXISTS thr');
-        mksqlite(['CREATE TABLE IF NOT EXISTS thr '...
+        mksqlite('DROP TABLE IF EXISTS crm');
+        mksqlite(['CREATE TABLE IF NOT EXISTS crm '...
                   '('...
                   'id INTEGER PRIMARY KEY AUTOINCREMENT, '...
                   'subject TEXT, '...
-                  'ref_f0 REAL /* Hz */, '...
-                  'dir_f0 REAL /* Hz */, '...
-                  'ref_ser REAL /* ratio */, '...
-                  'dir_ser REAL /* ratio */, '...
-                  'ref_voice TEXT, '...
-                  'dir_voice TEXT, '...
-                  'threshold FLOAT /* semitones */,'...
-                  'threshold_f0 FLOAT /* semitones */, '...
-                  'threshold_vtl FLOAT /* semitones */, '...
-                  'sd FLOAT, '....
+                  'dF0 REAL /* semitones */, '...
+                  'dVTL REAL /* semitones */, '...
+                  'target_colour TEXT, '...
+                  'target_number INTEGER, '...
+                  'target_callsign TEXT, '...
+                  'target_soundfile TEXT, '...
+                  'tmr REAL, '...
+                  'image TEXT, '...
+                  'i_repeat INTEGER, '...
+                  'correct INTEGER, '...
+                  'response_colour TEXT, '...
+                  'response_number INTEGER, '...
+                  'response_time REAL /* seconds */, '...
                   'response_datetime TEXT, '...
                   'i INTEGER'...
                   ')']);
         
         %-- Filling the table
-
-        which_threshold = 'last_6_tp';
-        %which_threshold = 'all';
 
         for i=1:length(files)
 
@@ -63,64 +67,35 @@ switch fmt
                     continue;
                 end
 
-                for ic=1:length(results.(phase).conditions)
+                for ir=1:length(results.(phase).responses)
 
-                    c = results.(phase).conditions(ic);
+                    resp = results.(phase).responses(ir);
 
-                    a = c.att(end);
+                    r = struct();
 
-                    if isfield(a, 'threshold') && ~isnan(a.threshold)
+                    r.subject = options.subject_name;
 
-                        t = a.responses(1).trial;
+                    r.dF0 = resp.trial.voice.dF0;
+                    r.dVTL = resp.trial.voice.dVTL;
+                    r.target_colour = resp.trial.target.colour;
+                    r.target_number = resp.trial.target.number;
+                    r.target_callsign = resp.trial.target.call_sign;
+                    r.target_soundfile = resp.trial.target.soundfile;
+                    r.tmr = resp.trial.tmr;
+                    r.image = resp.trial.image;
+                    r.i_repeat = resp.trial.i_repeat;
+                    r.correct = resp.correct;
+                    r.response_colour = resp.colour;
+                    r.response_number = resp.number;
+                    
+                    r.response_datetime = resp.response_datetime;
+                    r.response_time = resp.response_time;
+                    
+                    r.i = ir;
 
-                        r = struct();
+                    mksqlite_insert(db, 'crm', r);
 
-                        r.subject = options.subject_name;
-
-                        r.ref_f0 = options.(phase).voices(t.ref_voice).f0;
-                        r.dir_f0 = options.(phase).voices(t.dir_voice).f0;
-                        r.ref_ser = options.(phase).voices(t.ref_voice).ser;
-                        r.dir_ser = options.(phase).voices(t.dir_voice).ser;
-                        r.ref_voice = options.(phase).voices(t.ref_voice).label;
-                        r.dir_voice = options.(phase).voices(t.dir_voice).label;
-
-            %             r.vocoder = t.vocoder;
-            %             if r.vocoder>0
-            %                 r.vocoder_name = options.vocoder(r.vocoder).label;
-            %                 r.vocoder_description = options.vocoder(r.vocoder).description;
-            %             end    
-
-                        rewt = regexp(which_threshold, 'last_(\d+)_tp', 'tokens');
-                        if isempty(rewt)
-                            i_tp = a.diff_i_tp;    
-                            r.threshold = a.threshold;
-                        else
-                            ntp = str2double(rewt{1});
-                            i_nz = find(a.steps~=0);
-                            i_d  = find(diff(sign(a.steps(i_nz)))~=0);
-                            i_tp = i_nz(i_d)+1;
-                            i_tp = [i_tp, length(a.differences)];
-                            i_tp = i_tp(end-(ntp-1):end);
-
-                            r.threshold = mean(a.differences(i_tp));
-                        end
-
-                        u_f0  = 12*log2(options.(phase).voices(t.dir_voice).f0 / options.(phase).voices(t.ref_voice).f0);
-                        u_ser = 12*log2(options.(phase).voices(t.dir_voice).ser / options.(phase).voices(t.ref_voice).ser);
-                        u = [u_f0, u_ser];
-                        u = u / sqrt(sum(u.^2));
-
-                        r.threshold_f0 = r.threshold*u(1);
-                        r.threshold_ser = r.threshold*u(2);
-
-                        r.response_datetime = datestr(a.responses(1).timestamp, 'yyyy-mm-dd HH:MM:SS');
-                        r.sd = a.sd;
-                        r.i = ic;
-
-                        mksqlite_insert(db, 'thr', r);
-                    end
-
-                end % conditions
+                end % responses
                 
             end % phases
             

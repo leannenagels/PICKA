@@ -22,19 +22,17 @@ function [G, gameElements, gameCommands] = setUpGame(maxTurns, friendsTypes, tar
     % Start a new Game on screen 2
     G = SpriteKit.Game.instance('Title','Fishy Game', 'Size', screen2(3:4), 'Location', screen2(1:2), 'ShowFPS', false);
     %EG: 2017-10-10, make sure it is fullscreen on Windows
-  %  set(G.FigureHandle, 'Unit', 'normalized', 'outerPosition', [0,0,1,1]);
-    bkg = SpriteKit.Background(resizeBackgroundToScreenSize(screen2, [options.locationImages 'BACKGROUND_unscaled.png']));
+    set(G.FigureHandle, 'Unit', 'normalized', 'outerPosition', [0,0,1,1]);
+    bkg = SpriteKit.Background(resizeBackgroundToScreenSize(screen2, fullfile(options.locationImages, 'BACKGROUND_unscaled.png')));
     addBorders(G);
-    
-
     
     %---- Setup the Sprites
     %% Big Fish
     bigFish = SpriteKit.Sprite('fish_1');
-    initState(bigFish,'fish_1', [options.locationImages 'FISHY_TURN_1.png'], true);
+    initState(bigFish,'fish_1', fullfile(options.locationImages, 'FISHY_TURN_1.png'), true);
     for k=2:10
         spritename = sprintf('FISHY_TURN_%d',k);
-        pngFile = [options.locationImages spritename '.png'];
+        pngFile = fullfile(options.locationImages, [spritename '.png']);
         initState(bigFish, ['fish_' int2str(k)] , pngFile, true);
     end
     bigFish.Location = [screen2(3)/2, screen2(4)-450];
