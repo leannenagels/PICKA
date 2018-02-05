@@ -1,5 +1,13 @@
 function export_filename = export_results(fmt)
 
+% PICKA Fishy: Process the raw result .mat files into sqlite, csv or xls.
+% Note: the training phase is not filled in the table.
+
+%--------------------------------------------------------------------------
+% Etienne Gaudrain <etienne.gaudrain@cnrs.fr> - 2017-12-02
+% CNRS UMR 5292, FR | University of Groningen, UMCG, NL
+%--------------------------------------------------------------------------
+
 ref_options = fishy_options();
 
 lst = dir(fullfile(ref_options.result_path, [ref_options.result_prefix, '*.mat']));
@@ -26,8 +34,8 @@ switch fmt
         mksqlite('PRAGMA journal_mode=OFF');
         
         %-- Tables creation
-        mksqlite('DROP TABLE IF EXISTS thr');
-        mksqlite(['CREATE TABLE IF NOT EXISTS thr '...
+        mksqlite('DROP TABLE IF EXISTS results');
+        mksqlite(['CREATE TABLE IF NOT EXISTS results '...
                   '('...
                   'id INTEGER PRIMARY KEY AUTOINCREMENT, '...
                   'subject TEXT, '...
@@ -117,7 +125,7 @@ switch fmt
                         r.sd = a.sd;
                         r.i = ic;
 
-                        mksqlite_insert(db, 'thr', r);
+                        mksqlite_insert(db, 'results', r);
                     end
 
                 end % conditions

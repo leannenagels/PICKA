@@ -1,70 +1,123 @@
-function emotion_main(subject_name, phase, cue)
-% 
+function emotion_main(options, phase)
+
+%EMOTION_MAIN(OPTIONS, PHASE)
+%   The main loop that goes through the trials for the PICKA Emotion
+%   experiment.
+%   
+%   OPTIONS needs to have been generated in EMOTION_RUN to point to a valid
+%   test file.
+
+%-------------------------------------------------------------------------
+% Initial version by:
+% Paolo Toffanin <p.toffanin@umcg.nl>, RuG, UMCG, Groningen, NL
+%-----------------------
+% Other contributors:
+%   Jacqueline Libert
+%   Leanne Nagels <leanne.nagels@rug.nl>
+%-----------------------
+% This version modified by:
+% Etienne Gaudrain <etienne.gaudrain@cnrs.fr> - 2017-12-05
+% CNRS, CRNL, Lyon, FR | RuG, UMCG, Groningen, NL
+%-------------------------------------------------------------------------
 
     rng('shuffle')
-   
-    options.subject_name = subject_name;
+    
     simulateSubj = false;
     if strcmp(options.subject_name, 'test')
         simulateSubj = true;
     end
     
-    paths2Add = {'../lib/SpriteKit', ...
-                 '../lib/MatlabCommonTools/'}; 
+    % Update Matlab's path
+    paths2Add = {options.path.spritekit, options.path.tools};
     for ipath = 1 : length(paths2Add)
         if ~exist(paths2Add{ipath}, 'dir')
-            error([paths2Add{ipath} ' does not exists, check the ../']);
+            error('"%s" does not exist, check the emotion_options.m', paths2Add{ipath});
         else
             addpath(paths2Add{ipath});
         end
     end
     
-    options.home = getHome;
-    options = emotion_setSndFilesDir(options, cue);
-
-    %% Setup experiment 
-    options.result_path = [options.home '/Results/Emotion/'];
-    if ~exist(options.result_path, 'dir')
-        mkdir(options.result_path);
-    end
-
-    options.result_prefix = 'emo_';
-    options.res_filename = [options.result_path, sprintf('%s%s.mat', options.result_prefix, options.subject_name)];
+    % Create the result structure and load the subject's results/options file
+    results = struct();
+    load(options.res_filename);
     
+    %{
+    % EG: don't know what this is doing, but because we changed the
+    % structure of the experiment, this is probably not needed anymore.
+    
+    % emotion_checkOptions
      [attempt, expe, options, results, cue] = emotion_checkOptions(options, phase, cue);
 %    [attempt, expe, options, results, cue] = emotion_checkOptions_Debi(options, phase, cue);
     if isempty(attempt) && isempty(expe) && isempty(options) && isempty(results)
         return
     end
     
+    % make sure there is a soundDir
     if ~exist(options.soundDir, 'dir')
         error(['Sounds folder ' options.soundDir ' does not exists']);
     end
     if isempty(dir([options.soundDir '*.wav']))
         error([options.soundDir ' does not contain sound files']);
     end
+    %}
     
-    volume = SoundVolume(.44);
-    volume = SoundVolume(.36);
-%     if strcmp(cue, 'intact')
-%         volume = SoundVolume(.59);
-%     end
-    fprintf('stimuli displayed at %f of the volume\n', volume);
+    % ! Should this be changed? Set volume level
+    %volume = SoundVolume(.44);
+    % SOME CALIBRATION/ATTENUATION 
+    %
+    %fprintf('stimuli displayed at %f of the volume\n', volume);
     
     %% Game Stuff 
-    [G, ButtonJoy, ButtonSad, ButtonAngry, gameCommands, Confetti, Parrot, Pool, ...
-        Clownladder, Splash, ladder_jump11, clown_jump11, Drops, ExtraClown] = emotion_game; 
-    G.onMouseRelease = @buttondownfcn;
-    G.onKeyPress = @keypressfcn;
-
-    starting = 0;   
+    [G, Buttons, gameCommands, Confetti, Parrot, Pool, ...
+        Clownladder, Splash, ladder_jump11, clown_jump11, Drops, ExtraClown] = emotion_game(options); 
+    G.onMouseRelease = @buttonupfcn;
+    G.onMousePress   = @buttondownfcn;
+    %G.onKeyPress = @keypressfcn;
     
+    
+    % Calibration & sound level
+    if ~isfield(options, 'gain')
+        if ~exist('emotion_gain.m', 'file')
+            warndlg({'Calibration was not performed!',...
+                'We are using a gain of 0.0 dB for now...'}, 'PICKA :: Emotion', 'modal');
+            options.gain = 0;
+        else
+            options.gain = emotion_gain();
+        end
+    end
+    check_sound_volume_warning(options.subject_name);
+    
+    
+    %{
+    % figure out how to make sure they are NEW random number every time
+    % classify emotion soundFiles
     emotionvoices = classifyFiles(options.soundDir, phase);
-    ladderStep = 1;
+    % randomize training files
+    tmp = emotionvoices(strcmp({emotionvoices.phase}, 'training'));
+    tmp = tmp(randperm(length(tmp)));
+    % randomize test files
+    tmp1 = emotionvoices(strcmp({emotionvoices.phase}, 'test'));
+    tmp1 = tmp1(randperm(length(tmp1)));
+    % merge randomized training and test files
+    emotionvoices = [tmp; tmp1]; %;
+%     nFile = length (emotionvoices);
+%         for iFile = 1 : nFile
+%             if strcmp(phase, 'training')
+%             emotionvoices = emotionvoices(strcmp({emotionvoices.phase}, 'training'));
+% %             emotionvoices = tmp(randperm(length(tmp)));
+%             else
+%             emotionvoices = emotionvoices(strcmp({emotionvoices.phase}, 'test'));
+% %             emotionvoices = tmp1(randperm(length(tmp1)));
+%             end
+%         end    
+    %}
+    
     
     %% ============= Main loop =============   
-    for itrial = 1 : options.(phase).total_ntrials 
-            
+    ladderStep = 1;
+    starting = 0;
+    % We keep going while there are some undone trials
+    while any([expe.( phase ).trials.done]~=1)
         if ~simulateSubj
             while starting == 0
                 uiwait();
@@ -72,127 +125,97 @@ function emotion_main(subject_name, phase, cue)
         else
             gameCommands.State = 'empty';
         end
+        
+        itrial = find([expe.( phase ).trials.done]==0, 1, 'first');
+        trial = expe.(phase).trials(itrial);
                 
         if itrial == 1
-            %Clown.State = 'neutral';  
-            if (strcmp(phase, 'training'))
-                Clownladder.State = 'empty';
-                 ExtraClown.State = 'empty';
-                 Pool.State = 'empty'; 
-            else
-                Clownladder.State = 'ground';
-                Pool.State = 'pool'; 
-                ExtraClown.State = 'on';
+            % for training no pool or clowns
+            switch phase
+                case 'training'
+                    Clownladder.State = 'empty';
+                    ExtraClown.State = 'empty';
+                    Pool.State = 'empty'; 
+                case 'test'
+                    Clownladder.State = 'ground';
+                    Pool.State = 'pool'; 
+                    ExtraClown.State = 'on';
             end
             Confetti.State = 'off';
         end      
         
-        ButtonJoy.State = 'on';
-        ButtonSad.State = 'on';
-        ButtonAngry.State = 'on';
+        % activate buttons
+        for ib = 1:length(Buttons)
+            Buttons{ib}.State = 'on';
+        end
+%         ButtonJoy.State = 'on';
+%         ButtonSad.State = 'on';
+%         ButtonAngry.State = 'on';
         Parrot.State = 'neutral';
         pause(1);
-        
-%         for clownState = 5:-1:1
-%             Clown.State = sprintf('clownSpotLight_%d',clownState);
-%             pause(0.01)
-%         end
-        
+           
         Parrot.State = 'parrot_1';
         pause(0.5)
-       
-        emotionVect = strcmp({emotionvoices.emotion}, expe.(phase).condition(itrial).voicelabel);
-        phaseVect = strcmp({emotionvoices.phase}, phase);
-        possibleFiles = [emotionVect & phaseVect];
-        indexes = 1:length(possibleFiles);
-        indexes = indexes(possibleFiles);
-        
-        if isempty(emotionvoices(indexes)) % extend structure with missing files and redo selection
-            nLeft = length(emotionvoices);
-            tmp = classifyFiles(options.soundDir, phase);
-            emotionvoices(nLeft + 1 : nLeft + length(tmp)) = tmp;
-            clear tmp
-            emotionVect = strcmp({emotionvoices.emotion}, expe.(phase).condition(itrial).voicelabel);
-            phaseVect = strcmp({emotionvoices.phase}, phase);
-            possibleFiles = [emotionVect & phaseVect];
-            indexes = 1:length(possibleFiles);
-            indexes = indexes(possibleFiles); 
-        end
+
+%         emotionVect = strcmp({emotionvoices.emotion}, expe.(phase).condition(itrial).voicelabel);
+%         phaseVect = strcmp({emotionvoices.phase}, phase);
+%         possibleFiles = [emotionVect & phaseVect];
+%         indexes = 1:length(possibleFiles);
+%         indexes = indexes(possibleFiles);
+%         
+%         if isempty(emotionvoices(indexes)) % extend structure with missing files and redo selection
+%             nLeft = length(emotionvoices);
+%             tmp = classifyFiles(options.soundDir, phase);
+%             emotionvoices(nLeft + 1 : nLeft + length(tmp)) = tmp;
+%             clear tmp
+%             emotionVect = strcmp({emotionvoices.emotion}, expe.(phase).condition(itrial).voicelabel);
+%             phaseVect = strcmp({emotionvoices.phase}, phase);
+%             possibleFiles = [emotionVect & phaseVect];
+%             indexes = 1:length(possibleFiles);
+%             indexes = indexes(possibleFiles);
+%         end
     
         %this should store all names of possibleFiles 
-        toPlay = randperm(length(emotionvoices(indexes)),1);
-        [y, Fs] = audioread([options.soundDir emotionvoices(indexes(toPlay)).name]);
+%         toPlay = randperm(length(emotionvoices(indexes)),1);
+        %[y, Fs] = audioread([options.soundDir emotionvoices(itrial).name]);
+        [y, Fs] = audioread(fullfile(options.sound_folder, trial.file));
         player = audioplayer(y, Fs);
         iter = 1;
         play(player)
+        tic();       
+        
+        % parrot talks while soundFile is playing
         while true
             Parrot.State = ['parrot_' sprintf('%i', mod(iter, 2) + 1)];
             iter = iter + 1;
-            pause(0.2);
+            pause(0.1);
             if ~isplaying(player)
                 Parrot.State = 'neutral';
                 break;
             end
-        end
-        tic(); 
-        if simulateSubj
-            response.timestamp = now;
-            response.response_time = toc;
-            %response.button_clicked = randi([0, 1], 1, 1); % default in case they click somewhere else
-            buttonsID = {'angry', 'sad', 'joyful';};
-            response.buttonID = buttonsID{response.button_clicked};
-            response.filename = emotionvoices(indexes(toPlay)).name;
-            response.correct = strcmp({response.button_clicked}, expe.(phase).condition(itrial).voicelabel);
-%             if response.button_clicked == expe.(phase).condition(itrial).voicelabel
-%                response.correct = 1;
-%             else
-%                 response.correct = 0;
-%             end
-%         else
-%             clickParrot2continue = true;
-%             uiwait
-%             clickParrot2continue = false;
-        end % if simulateSubj
-        
-%         for clownState = 1:5
-%             Clown.State = sprintf('clownSpotLight_%d',clownState);
-%             pause(0.01)
+        end   
+%         for ib = 1:length(Buttons)
+%             Buttons{ib}.State = 'on';
 %         end
-%         Clown.State = expe.(phase).condition(itrial).facelabel;
-%         pause(0.6)
-        
-        ButtonJoy.State = 'on';
-        ButtonSad.State = 'on';
-        ButtonAngry.State = 'on';
         
         if ~simulateSubj
             uiwait();
-            pause(0.5)
-            ButtonJoy.State = 'off';
-            ButtonSad.State = 'off';
-            ButtonAngry.State = 'off';
-        
+            pause(0.2);
+            for ib = 1:length(Buttons)
+                Buttons{ib}.State = 'off';
+            end        
         else
-            response.button_clicked = randi([0,1]);
-            ButtonJoy.State = 'press';
             response.timestamp = now();
             response.response_time = toc();
-            response.respButton = 'joyful';
-            if response.button_clicked
-                response.respButton = 'empty';
-            end
+            response.emotion = options.(phase).emotions{randi(length(options.(phase).emotions))};
+            response.correct = strcmp(response.emotion, trial.emotion);
         end
            
+       % correctness       
+       response.trial = trial;
+       response.correct = strcmp(response.emotion, trial.emotion);
        
-        
-       response.filename = emotionvoices(indexes(toPlay)).name;
-       response.correct = strcmp({response.button_clicked}, expe.(phase).condition(itrial).voicelabel);
-%        if response.button_clicked == expe.(phase).condition(itrial).voicelabel
-%           response.correct = 1;
-%        else
-%            response.correct = 0;
-%        end
-       
+       % confetti if correct and shake if incorrect
        if response.correct == 1
             for confettiState = 1:7
                 Confetti.State = sprintf('confetti_%d', confettiState);
@@ -204,159 +227,136 @@ function emotion_main(subject_name, phase, cue)
             for shakeshake = 1:2
                 for parrotshake = 1:3
                     Parrot.State = sprintf('parrot_shake_%d', parrotshake);
-                    pause(0.2)
+                    pause(0.1)
                 end
             end
         end % if response.correct
     
-        fprintf('Clicked button: %s\n', response.button_clicked);
+        fprintf('Clicked button: %s\n', response.emotion);
         fprintf('Response time : %d ms\n', round(response.response_time*1000));
         fprintf('Response correct: %d\n\n', response.correct);
-
-        % if file already exists extend the structure
-        if exist(options.res_filename, 'file');
-            load(options.res_filename)
-        end
-        response.condition = expe.(phase).condition(itrial);
-        if strcmp(phase, 'test')
-            results.(phase).(cue).att(attempt).responses(itrial) = response;
-        else
-            results.(phase).(cue).att(attempt).responses(itrial) = response;
-        end
+        
+        expe.(phase).trials(itrial).done = 1;
+        
+        results.(phase).responses(itrial) = response;
+        %if strcmp(phase, 'test')
+        %    results.(phase).responses(itrial) = response;
+        %elseif strcmp(phase, 'training')
+        %    results.(phase).responses(itrial) = response;
+        %end
+            
         save(options.res_filename, 'options', 'expe', 'results');
         
-        if expe.test.condition(itrial).clownladderNmove ~= 0
-            if (strcmp(phase, 'test'))
-                if ~ expe.test.condition(itrial).splash
-                    for iState = 1 : expe.test.condition(itrial).clownladderNmove
-                        Clownladder.State = sprintf('clownladder_%d%c',mod(ladderStep, 9),'a');
-                        pause (0.2)
-                        Clownladder.State = sprintf('clownladder_%d%c',mod(ladderStep, 9),'b');
-                        pause (0.2)
-                        ladderStep = ladderStep + 1;
-                    end
-                else
-                    Clownladder.State = sprintf('clownladder_%d%c',mod(ladderStep, 9),'a');
-                    pause (0.2)
-                    Clownladder.State = sprintf('clownladder_%d%c',mod(ladderStep, 9),'b');
-                    pause (0.2)
-                    for ijump = 1:10
-                        Clownladder.State = sprintf('clownladder_jump_%d', ijump);
-                        pause(0.2)
-                    end
-                    Clownladder.State = 'empty';
-                    ladder_jump11.State = 'ladder_jump_11';
-                    clown_jump11.State = 'clown_jump_11';
-                    for isplash = 1:3
-                        Splash.State = sprintf('sssplash_%d', isplash);
-                        pause(0.1)
-                    end
-                    pause (0.5)
-                    Splash.State = 'empty';
-                    ladder_jump11.State = 'empty';
-                    clown_jump11.State = 'empty';
-                    ExtraClown.State = 'empty';
-                    Clownladder.State = 'ground';
-                    ladderStep = 1;
-                    for idrop = 1:2
-                        Drops.State = sprintf('sssplashdrops_%d', idrop);
-                        pause(0.2)
-                    end
-                    Drops.State = 'empty';
-                end % if ~ expe.test.condition(itrial).splash
-            end % if (strcmp(phase, 'test'))
-        end % if expe.test.condition(itrial).clownladderNmove ~= 0
-        
-        if itrial == options.(phase).total_ntrials
-            Clownladder.State = 'end';
-            gameCommands.Scale = 2; 
-            gameCommands.State = 'finish';
-         end
-        
-        % remove just played file from list of possible sound files
-        emotionvoices(indexes(toPlay)) = [];
-    end    
+        % clownladder state
+        % We make the clown move up the ladder every trial, until it has
+        % reached the top (clownladder_7b)
+        if strcmp(phase, 'test')
+            nStep = [2, 5, 8, 10, 13, 16, 18, 20, 23, 26, 28, 31, 34, 36];
+            if ismember(itrial,nStep)==1
+                Clownladder.State = sprintf('clownladder_%d%c', ladderStep,'a');
+                pause (0.2)
+                Clownladder.State = sprintf('clownladder_%d%c', ladderStep,'b');
+                pause (0.2)
+                ladderStep = ladderStep + 1;
+            end
+            if strcmp(Clownladder.State, 'clownladder_7b')
+                % The clown is that the top of the ladder, time to jump!
+                for ijump = 1:10
+                    Clownladder.State = sprintf('clownladder_jump_%d', ijump);
+                    pause(0.1)
+                end
+                Clownladder.State = 'empty';
+                ladder_jump11.State = 'ladder_jump_11';
+                clown_jump11.State = 'clown_jump_11';
+                for isplash = 1:3
+                    Splash.State = sprintf('sssplash_%d', isplash);
+                    pause(0.07)
+                end
+                pause(0.5)
+                Splash.State = 'empty';
+                ladder_jump11.State = 'empty';
+                clown_jump11.State = 'empty';
+                ExtraClown.State = 'empty';
+                Clownladder.State = 'ground';
+                ladderStep = 1;
+                for idrop = 1:2
+                    Drops.State = sprintf('sssplashdrops_%d', idrop);
+                    pause(0.1)
+                end
+                Drops.State = 'empty';
+                
+            end   
+        end
+    end % while there are undone trials
+    
+    Clownladder.State = 'end';
+    gameCommands.Scale = 2; 
+    gameCommands.State = 'finish';   
     
     % it might be that this closes also the GUI for the experimenter
-%     close gcf
-    G.delete
+    % close gcf
+    G.delete();
 
+    % remove paths
     for iPath = 1 : length(paths2Add)
         rmpath(paths2Add{iPath});
     end
     
+%%------------------------------------ embedded game functions    
     
-%% embedded game functions    
-    
-    function buttondownfcn(hObject, callbackdata)
+    % function that tracks button presses
+    function buttonupfcn(hObject, callbackdata)
         
         locClick = get(hObject,'CurrentPoint');
         if starting == 1
-            % Joy button
-            if (locClick(1) >= ButtonJoy.clickL) && (locClick(1) <= ButtonJoy.clickR) && ...
-                    (locClick(2) >= ButtonJoy.clickD) && (locClick(2) <= ButtonJoy.clickU)
-                %if strcmp(Clown.State, expe.(phase).condition(itrial).facelabel)
-                    ButtonJoy.State = 'press';
-                    response.timestamp = now();
+            click_located = false;
+            for i=1:length(Buttons)
+                button = Buttons{i};
+                if is_click_on_sprite(button, locClick)
                     response.response_time = toc();
-                    response.button_clicked = 'joyful';
-                    response.respButton = 'joyful';
-                    uiresume
-                %end
-            end
-            % Sad button
-            if (locClick(1) >= ButtonSad.clickL) && (locClick(1) <= ButtonSad.clickR) && ...
-                    (locClick(2) >= ButtonSad.clickD) && (locClick(2) <= ButtonSad.clickU)
-                %if strcmp(Clown.State, expe.(phase).condition(itrial).facelabel)
-                    ButtonSad.State = 'press';
                     response.timestamp = now();
-                    response.response_time = toc();
-                    response.respButton = 'sad';
-                    response.button_clicked = 'sad'; % default in case they click somewhere else
-                    uiresume
-                %end
-            end
-            
-            % Angry button
-            if (locClick(1) >= ButtonAngry.clickL) && (locClick(1) <= ButtonAngry.clickR) && ...
-                    (locClick(2) >= ButtonAngry.clickD) && (locClick(2) <= ButtonAngry.clickU)
-                %if strcmp(Clown.State, expe.(phase).condition(itrial).facelabel)
-                    ButtonAngry.State = 'press';
-                    response.timestamp = now();
-                    response.response_time = toc();
-                    response.button_clicked = 'angry';
-                    response.respButton = 'angry';
-                    uiresume
-                %end
-            end
-            
-            if (locClick(1) >= Parrot.clickL) && (locClick(1) <= Parrot.clickR) && ...
-                    (locClick(2) >= Parrot.clickD) && (locClick(2) <= Parrot.clickU)
-                if clickParrot2continue
-                    %Clown.State = expe.(phase).condition(itrial).facelabel;
-                    uiresume;
-                    tic();
+                    button.State = 'press';
+                    response.emotion = button.ID;
+                    uiresume();
+                    click_located = true;
+                    break
                 end
             end
+            
+            if ~click_located && options.clickParrot2continue && is_click_on_sprite(Parrot, locClick)
+                response.response_time = toc();
+                response.timestamp = now();
+                button.State = 'press';
+                response.emotion = 'none';
+                uiresume();
+                tic();
+            end
         else %  else of 'if starting == 1'
-            if (locClick(1) >= gameCommands.clickL) && (locClick(1) <= gameCommands.clickR) && ...
-                    (locClick(2) >= gameCommands.clickD) && (locClick(2) <= gameCommands.clickU)
+            if is_click_on_sprite(gameCommands, locClick)
                 starting = 1;
                 gameCommands.State = 'empty';
-                pause (1)
+                pause(1)
                 uiresume();
             end
         end
         
-    end % buttondownfcn function
-   
-%     function keypressfcn(~,e)
-%         if strcmp(e.Key, 'control') % OR 'space'
-%             uiresume;
-%             tic();
-%         end
-%     end
-  
+    end
 
+    function buttondownfcn(hObject, callbackdata)
+        
+        locClick = get(hObject,'CurrentPoint');
+        if starting == 1
+            for i=1:length(Buttons)
+                button = Buttons{i};
+                if is_click_on_sprite(button, locClick)
+                    button.State = 'press';
+                else
+                    button.State = 'on';
+                end
+            end
+            
+        end
+        
+    end 
 
 end

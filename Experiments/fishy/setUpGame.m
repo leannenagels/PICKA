@@ -23,6 +23,7 @@ function [G, gameElements, gameCommands] = setUpGame(maxTurns, friendsTypes, tar
     G = SpriteKit.Game.instance('Title','Fishy Game', 'Size', screen2(3:4), 'Location', screen2(1:2), 'ShowFPS', false);
     %EG: 2017-10-10, make sure it is fullscreen on Windows
     set(G.FigureHandle, 'Unit', 'normalized', 'outerPosition', [0,0,1,1]);
+    set(G.FigureHandle, 'Unit', 'pixel');
     bkg = SpriteKit.Background(resizeBackgroundToScreenSize(screen2, fullfile(options.locationImages, 'BACKGROUND_unscaled.png')));
     addBorders(G);
     

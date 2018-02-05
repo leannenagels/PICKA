@@ -103,8 +103,8 @@ function [i_correct, player, isi, trial] = fishy_make_stim(options, difference, 
     i_correct = find(i_order==3);
     player = {};
     for i=1:length(xOut)
-        x = xOut{i}*10^(-options.attenuation_dB/20);
-        player{i} = audioplayer([zeros(1024*3, 2); x; zeros(1024*3, 2)], fs, 16);
+        x = xOut{i}*10^(options.gain/20);
+        player{i} = audioplayer([zeros(1024*3, 2); x; zeros(1024*3, 2)], fs, 24);
         %fprintf('Interval %d max: %.2f\n', i, max(abs(x(:))));
     end
 

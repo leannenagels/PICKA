@@ -138,6 +138,11 @@ for i= 1:length(syllable_list)
     syllable_list{i} = strrep(syllable_list{i}, '.wav', '');
 end
 
+options.sounds_for_calibration = {};
+for k=1:length(dir_waves)
+    options.sounds_for_calibration{k} = fullfile(options.sound_path, dir_waves(k).name);
+end
+
 options.syllables = syllable_list;
 options.n_syll = 3;
 
@@ -231,7 +236,8 @@ end
 
 %====================================== Create the expe structure and save
 
-expe.phases = {'training_1', 'test_1', 'training_2', 'test_2'};
+%expe.phases = {'training_1', 'test_1', 'training_2', 'test_2'};
+expe.phases = {'training_1', 'test_1', 'test_2'};
 
                 
 if isfield(options, 'res_filename')

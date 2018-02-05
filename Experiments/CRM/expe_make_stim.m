@@ -12,8 +12,6 @@ if nargin<3
     is_demo = false;
 end
 
-tmr_strategy = options.tmr_strategy;
-
 %-------------------------------------
 % Target Sentence
 fprintf('Reading soundfile "%s" as target...\n', trial.target.soundfile);
@@ -24,18 +22,16 @@ if fs~=options.fs
     fs = options.fs;
 end
 
-switch tmr_strategy
-    case 'louder_constant'
-        if trial.tmr >=0
-            x = x / rms(x);
-        else
-            x = x / rms(x) * 10^(trial.tmr/20);
-        end
+options.reference_rms = 0.0823/sqrt(2);
 
-    case 'constant_level'
-        x = x / rms(x) * 10^(trial.tmr/20);
+if trial.tmr >=0
+    x = x / rms(x) * options.reference_rms;
+else
+    x = x / rms(x) * options.reference_rms * 10^(trial.tmr/20);
 end
 
+options.target_delay = 750e-3;
+options.masker_end_delay = 250e-3;
 
 target = [zeros(round(options.target_delay*fs),1); x; zeros(round(options.masker_end_delay*fs),1)];
 
@@ -43,26 +39,16 @@ target = [zeros(round(options.target_delay*fs),1); x; zeros(round(options.masker
 % Masker Sentence
 [masker, masker_struct] = create_masker(options, trial, length(target));
 
-switch tmr_strategy
-    case 'louder_constant'
-        if trial.tmr >=0
-            masker = masker / rms(masker) * 10^(-trial.tmr/20);
-        else
-            masker = masker / rms(masker);
-        end
-    case 'constant_level'
-        masker = masker / rms(masker);
+if trial.tmr >=0
+    masker = masker / rms(masker) * options.reference_rms * 10^(-trial.tmr/20);
+else
+    masker = masker / rms(masker) * options.reference_rms;
 end
 
 %-------------------------------------
 % Mix Target and Masker
 
 z = target + masker;
-
-switch tmr_strategy
-    case 'constant_level'
-        z = z/rms(z);
-end
 
 info.masker = masker_struct();
 

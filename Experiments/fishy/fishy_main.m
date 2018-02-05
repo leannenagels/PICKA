@@ -16,9 +16,9 @@ function fishy_main(res_filename, phase)
         participant.sex = 'f';
         participant.language = 'nl_nl'; % English or Dutch
         participant.kidsOrAdults = 'Kid';
-        addpath(options.path.tools);
-        options.home = getHome();
-        rmpath(options.path.tools);
+        %addpath(options.path.tools);
+        %options.home = getHome();
+        %rmpath(options.path.tools);
         options = fishy_options(options, participant);
         paths2Add = {options.path.spritekit, options.path.tools};
         for ipath = 1 : length(paths2Add)
@@ -34,6 +34,33 @@ function fishy_main(res_filename, phase)
         expe.training.conditions(1).done = 0;
     end
     
+   % Calibration & sound level
+    if ~isfield(options, 'gain')
+        if ~exist('fishy_gain.m', 'file')
+            warndlg({'Calibration was not performed!',...
+                'We are using a gain of 0.0 dB for now...'}, options.experiment_label, 'modal');
+            options.gain = 0;
+        else
+            options.gain = fishy_gain();
+        end
+    elseif options.gain ~= fishy_gain()
+        b1 = sprintf('Keep the result file''s gain (%.1f dB)', options.gain);
+        b2 = sprintf('Change to the FISHY_GAIN value (%.1f dB)', fishy_gain());
+        blb = questdlg(sprintf('The GAIN in the results file (%.1f dB) is different from the gain in FISHY_GAIN (%.1f dB).', options.gain, fishy_gain()), ...
+                options.experiment_label, b1, b2, b1);
+        switch blb
+            case b2
+                if ~isfield(options, 'comments')
+                    options.comments = {};
+                end
+                options.comments{end+1} = sprintf('Gain was updated from %.1f dB to %.1f dB on %s', options.gain, fishy_gain(), datestr(now()));
+                options.gain = fishy_gain();
+        end
+
+    end
+    check_sound_volume_warning(options.subject_name);
+    
+    
     session = getSession();
     
     if ~isfield(expe, 'session')
@@ -44,9 +71,9 @@ function fishy_main(res_filename, phase)
     
     options_phase = regexprep(phase, '_\d+', ''); % in options, phases are not numbered, i.e. we have 'test' instead of 'test_1'
     
-    requested_volume = 10^(-options.attenuation_dB/20);
-    options.sound_volume = SoundVolume(requested_volume);
-    fprintf('Stimuli presented at %.2f%% of the volume (%.1f dB re. max).\n', options.sound_volume*100, 20*log10(options.sound_volume));
+    %requested_volume = 10^(-options.attenuation_dB/20);
+    %options.sound_volume = SoundVolume(requested_volume);
+    %fprintf('Stimuli presented at %.2f%% of the volume (%.1f dB re. max).\n', options.sound_volume*100, 20*log10(options.sound_volume));
 
     starting = 1;
     simulate = strcmp(options.subject_name, 'test');

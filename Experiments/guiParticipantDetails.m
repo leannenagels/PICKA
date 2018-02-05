@@ -1,19 +1,9 @@
 function [participant] = guiParticipantDetails(participant)
 
 if nargin<1
-    participant = struct();
-    participant.name = '';
-    participant.age = 0;
-    participant.sex = 'f'; % 'm' or 'f'
-    participant.language = 'nl'; % 'nl or 'en'
-
-    % participant.expDir = {'NVA', 'fishy', 'emotion', 'MCI', 'gender', 'sos'};
-    participant.expDir = {'fishy', 'emotion', 'gender', 'sos'};
-
-    participant.kidsOrAdults = 'kid';
-
-    % IS THIS A BIT OF A PROBLEM FOR THE ENGLISH VERSION?
-    participant.sentencesCourpus = 'VU_zinnen'; 
+    participant = default_participant();
+else
+    participant = struct_merge(default_participant(), participant);
 end
 
 screenSize = get(0, 'ScreenSize');
@@ -70,7 +60,14 @@ screenSize = get(0, 'ScreenSize');
     rbFemale = uicontrol(sexBg,'Style','radiobutton','String','Female',...
                 'Units','normalized',...
                 'Position',[.1 .2 .8 .2]);
-
+    sexBg.SelectedObject = [];
+    switch participant.sex
+        case 'f'
+            sexBg.SelectedObject = [rbFemale];
+        case 'm'
+            sexBg.SelectedObject = [rbMale];
+    end
+    
 %% language
     posTextY = posTextY - itemsDistance - sizeWindow(2);
     langBg = uibuttongroup(f,'Title','Language', 'Unit', 'pixel',...
@@ -83,6 +80,13 @@ screenSize = get(0, 'ScreenSize');
     rbEnglish = uicontrol(langBg,'Style','radiobutton','String','English (en-gb)',...
                 'Units','normalized',...
                 'Position',[.1 .2 .8 .2]);
+    langBg.SelectedObject = [];
+    switch participant.language
+        case {'nl', 'nl_nl'}
+            langBg.SelectedObject = [rbDutch];
+        case {'en', 'en_gb'}
+            langBg.SelectedObject = [rbEnglish];
+    end
 
 %% continue
     continueButton = uicontrol(f,'Style','pushbutton',...
@@ -94,26 +98,60 @@ screenSize = get(0, 'ScreenSize');
     
     f.Visible = 'on';
     
-    uiwait
+    uiwait();
     
     function updateParticipant(~, ~)
         participant.name = subTxtBox.String;
-        participant.age = str2num(ageTxtBox.String);
-        participant.sex = 'f';
+        participant.age = ageTxtBox.String;
+        participant.sex = '';
         if rbMale.Value == 1
-            participant.language = 'm';
+            participant.sex = 'm';
+        elseif rbFemale.Value == 1
+            participant.sex = 'f';
         end
-        participant.language = 'nl_nl'; % English or Dutch
+        participant.language = ''; % English or Dutch
         if rbEnglish.Value == 1
             participant.language = 'en_gb';
+        elseif rbDutch.Value == 1
+            participant.language = 'nl_nl';
         end
+        %{
         participant.kidsOrAdults = 'kid'; % we leave empty for kids because I am not sure whether we'd fuck up some file names/if statements
         if participant.age > 18
             participant.kidsOrAdults = 'adult';
         end
-        uiresume
+        %}
+        uiresume();
     end
     %
 %     close this figure
     close(gcf)
+end
+
+function participant = default_participant()
+
+    participant = struct();
+    participant.name = '';
+    participant.age = 0;
+    participant.sex = ''; % 'm' or 'f'
+    participant.language = 'nl'; % 'nl or 'en'
+
+end
+
+function C = struct_merge(A, B)
+
+    % C = struct_merge(A, B)
+    %   Merge struct A and B. If a key is present in both structs, then the
+    %   value from B is used. Struct arrays are not supported.
+
+    % E. Gaudrain <egaudrain@gmail.com> 2010-06-02
+
+    C = A;
+
+    keys = fieldnames(B);
+    for k = 1:length(keys)
+        key = keys{k};
+        C.(key) = B.(key);
+    end
+
 end

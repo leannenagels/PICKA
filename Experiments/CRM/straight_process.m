@@ -1,7 +1,7 @@
 function [y, fs] = straight_process(wavIn, dF0, dVTL, options)
 
 [wavIn_path, wavIn_name, wavIn_ext] = fileparts(wavIn);
-cache_path = fullfile(wavIn_path, options.cache_path);
+cache_path = options.cache_path;
 
 wavOut = make_fname(wavIn, dF0, dVTL, cache_path);
 
@@ -23,7 +23,7 @@ if ~exist(wavOut, 'file') || options.force_rebuild_straight_output
         load(mat);
     else
         if verLessThan('matlab', '8')
-            [x, fs] = wavread(wavIn);
+            [x, fs] = audioread(wavIn);
         else
             [x, fs] = audioread(wavIn);
         end

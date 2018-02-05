@@ -1,5 +1,13 @@
 function export_filename = export_results(fmt)
 
+% PICKA CRM: Process the raw result .mat files into sqlite, csv or xls.
+% Note: the training phase is not filled in the table.
+
+%--------------------------------------------------------------------------
+% Etienne Gaudrain <etienne.gaudrain@cnrs.fr> - 2017-12-02
+% CNRS UMR 5292, FR | University of Groningen, UMCG, NL
+%--------------------------------------------------------------------------
+
 if nargin<1
     fmt = 'sql';
 end
@@ -30,8 +38,8 @@ switch fmt
         mksqlite('PRAGMA journal_mode=OFF');
         
         %-- Tables creation
-        mksqlite('DROP TABLE IF EXISTS crm');
-        mksqlite(['CREATE TABLE IF NOT EXISTS crm '...
+        mksqlite('DROP TABLE IF EXISTS responses');
+        mksqlite(['CREATE TABLE IF NOT EXISTS responses '...
                   '('...
                   'id INTEGER PRIMARY KEY AUTOINCREMENT, '...
                   'subject TEXT, '...
@@ -93,7 +101,7 @@ switch fmt
                     
                     r.i = ir;
 
-                    mksqlite_insert(db, 'crm', r);
+                    mksqlite_insert(db, 'responses', r);
 
                 end % responses
                 

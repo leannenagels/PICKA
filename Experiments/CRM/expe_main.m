@@ -26,6 +26,33 @@ drawnow()
 nbreak = 0;
 starting = 1;
 
+% Calibration & sound level
+if ~isfield(options, 'gain')
+    if ~exist('expe_gain.m', 'file')
+        warndlg({'Calibration was not performed!',...
+            'We are using a gain of 0.0 dB for now...'}, options.experiment_label, 'modal');
+        options.gain = 0;
+    else
+        options.gain = expe_gain();
+    end
+elseif options.gain ~= expe_gain()
+    b1 = sprintf('Keep the result file''s gain (%.1f dB)', options.gain);
+    b2 = sprintf('Change to the EXPE_GAIN value (%.1f dB)', expe_gain());
+    blb = questdlg(sprintf('The GAIN in the results file (%.1f dB) is different from the gain in EXPE_GAIN (%.1f dB).', options.gain, expe_gain()), ...
+            options.experiment_label, b1, b2, b1);
+    switch blb
+        case b2
+            if ~isfield(options, 'comments')
+                options.comments = {};
+            end
+            options.comments{end+1} = sprintf('Gain was updated from %.1f dB to %.1f dB on %s', options.gain, expe_gain(), datestr(now()));
+            options.gain = expe_gain();
+    end
+
+end
+check_sound_volume_warning(options.subject_name);
+
+
 %------------------- MAIN LOOP ------------------------
 while mean([expe.( phase ).trials.done])~=1
     

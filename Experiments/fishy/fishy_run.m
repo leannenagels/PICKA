@@ -60,11 +60,6 @@ if startswith(phase, 'training')
     fishy_main(options.res_filename, phase);
 end
 
-%------------------------------------------
-% Clean up the path
-for ipath = 1 : length(paths2Add)
-    rmpath(paths2Add{ipath});
-end
 
 %------------------------------------------
 % Calculate progress
@@ -73,8 +68,15 @@ if is_empty(expe)
     progress = 0;
 else
     p = [];
-    for iphase = 1 : length(expe.phases)
-        p = [p, [expe.(expe.phases{iphase}).conditions.done]];
+    for iphase = 1 : length(expe.expe.phases)
+        p = [p, [expe.expe.(expe.expe.phases{iphase}).conditions.done]];
     end
     progress = mean(p);
+end
+
+
+%------------------------------------------
+% Clean up the path
+for ipath = 1 : length(paths2Add)
+    rmpath(paths2Add{ipath});
 end

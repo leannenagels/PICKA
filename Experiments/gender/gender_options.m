@@ -1,4 +1,4 @@
-function options = gender_options(options, participant)
+function options = gender_options(options)
 
     options.path.tools    = '../../Resources/lib/MatlabCommonTools';
     options.path.mksqlite = '../../Resources/lib/mksqlite';
@@ -16,8 +16,8 @@ function options = gender_options(options, participant)
     end
     options.result_prefix = 'gen_';
     
-    options.sound_path = '../../Resources/sounds/NVA/gender/equalized';
-    options.tmp_path   = '../../Resources/sounds/NVA/gender/processed';
+    options.sound_path = '../../Resources/sounds/gender/';
+    options.tmp_path   = '../../Resources/tmp/gender/';
 
     % EG: isempty does not work here
     %if isempty(dir(options.sound_path))
@@ -44,16 +44,6 @@ function options = gender_options(options, participant)
     % written in the log file. Ideally this file should be on the network so
     % that it can be checked remotely. If the file cannot be reached, the
     % program will just continue silently.
-    
-if nargin>1
-    % The current status of the experiment, number of trial and phase, is
-    % written in the log file. Ideally this file should be on the network so
-    % that it can be checked remotely. If the file cannot be reached, the
-    % program will just continue silently.
-    options.log_file = fullfile(options.result_path, 'status.txt');
-    options.subject_name = participant.name;
-    options.language = participant.language;
-    options.kidsOrAdults = participant.kidsOrAdults;
-    options.res_filename = fullfile(options.result_path, sprintf('%s%s.mat', options.result_prefix, options.subject_name));
+    options.log_file = fullfile('results', 'status.txt');
    
 end
