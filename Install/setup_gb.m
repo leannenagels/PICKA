@@ -1,6 +1,6 @@
-function setup_nl()
+function setup_gb()
 
-% Runs the installation procedure with nl_nl as default language.
+% Runs the installation procedure with en_gb as default language.
 
 %--------------------------------------------------------------------------
 % Etienne Gaudrain <etienne.gaudrain@cnrs.fr> - 2018-05-02
@@ -47,10 +47,10 @@ switch r
         mod = py.importlib.import_module('manage_picka');
         py.reload(mod);
         fprintf('\n\n');
-        success = py.manage_picka.main(py.list({'install', src, dst, 'nl_nl'}));
+        py.manage_picka.main(py.list({'install', src, dst, 'en_gb'}));
         if success==0
             try
-                delete('manage_picka.p*', 'setup_nl.m');
+                delete('manage_picka.p*', 'setup_gb.m');
             catch
             end
         end
