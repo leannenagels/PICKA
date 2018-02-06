@@ -1,5 +1,14 @@
 function calibration(language)
 
+%CALIBRATION(LANGUAGE)
+%   Prepares calibration material for PICKA. Once the gains for each
+%   experiment adjusted, they are saved in each experiment's folder.
+    
+%--------------------------------------------------------------------------
+% Etienne Gaudrain <etienne.gaudrain@cnrs.fr> - 2018-05-02
+% CNRS UMR 5292, FR | University of Groningen, UMCG, NL
+%--------------------------------------------------------------------------
+
     warning('off');
 
     if nargin<1
@@ -20,12 +29,18 @@ function calibration(language)
     %---- Prepare calibration noises
 
     cprintf('_[.2, .7, .5]', [upper('Preparing calibration noise'), '\n']);
-
-    scripts = { ...
-        'gender/gender', ...
-        'fishy/fishy', ...
-        'emotion/emotion'};
-        %'CRM/expe', ...
+    
+    scripts = {};
+    PICKA = picka_definition();
+    for i=1:length(PICKA)
+        scripts{i} = fullfile(PICKA(i).folder, PICKA(i).prefix);
+    end
+    
+    %scripts = { ...
+    %    'gender/gender', ...
+    %    'fishy/fishy', ...
+    %    'emotion/emotion'};
+    %    'CRM/expe', ...
 
     length_sample = 10;
     spectrum_max  = -Inf;
@@ -169,6 +184,8 @@ function calibration(language)
     uicontrol('Style', 'text', 'String', 'gain (dB)', 'Position', [ww/4, (i-.5)*rh+10+32+10+32+10, ww/4-10, 16]);
     uicontrol('Style', 'pushbutton', 'String', 'Save gains to files', 'Position', [10, 10, 150, 32], 'Callback', @save_gains_to_files);
 
+    check_sound_volume_warning('Calibration');
+    
     rmpath(fullfile(lib_path_absolute, 'MatlabCommonTools'));
 
     warning('on');

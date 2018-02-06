@@ -1,4 +1,4 @@
-function out = export_results(fmt)
+function export_filename = export_results(fmt)
 
 % PICKA Emotion: Process the raw result .mat files into sqlite, csv or xls.
 % Note: the training phase is not filled in the table.
@@ -131,9 +131,6 @@ switch fmt
         error('Export format "%s" is not implemented.', fmt);
 end
 
-if nargout>=1
-    out = export_filename;
-end
 
 
 % %==========================================================================

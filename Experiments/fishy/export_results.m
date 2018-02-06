@@ -20,7 +20,7 @@ switch fmt
         export_filename = fullfile(ref_options.result_path, [ref_options.result_prefix, 'db.sqlite']);
         
         %-- Check if we need to regenerate the database
-        if exist(export_filename, 'file') && last_filedate < get_filedate(export_filename)
+        if exist(export_filename, 'file') & last_filedate < get_filedate(export_filename)
             fprintf('The database file is more recent that the most recent data file, so we are not recreating the database.\n');
             fprintf('To force the creation of the database, delete the sqlite file "%s".\n', export_filename);
             return

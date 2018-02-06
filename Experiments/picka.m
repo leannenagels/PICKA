@@ -1,7 +1,20 @@
 function picka(subject_name)
 
-%TODO: what to do if subject_name is empty, check subject name validity
-% subject name format: {nl|gb}_{NH|CI}{A|K}[000]
+%PICKA(SUBJECT_NAME)
+%   Starts the experiment runner for PICKA.
+%
+%   If no argument is given, the user will be prompted to enter a subject
+%   ID on the command line. If the subject name is empty (from the function
+%   call or from the command line), the participant's details GUI is
+%   started to create a new participant.
+%
+%   To continue testing an existing participant, their exact ID must be
+%   entered.
+
+%--------------------------------------------------------------------------
+% Etienne Gaudrain <etienne.gaudrain@cnrs.fr> - 2018-05-02
+% CNRS UMR 5292, FR | University of Groningen, UMCG, NL
+%--------------------------------------------------------------------------
 
 % We add MatlabCommonTools relatively first to get the GetFullPath
 % function, and then we reinclude it with absolute path so it stays when we
@@ -14,29 +27,25 @@ addpath(fullfile(lib_path_absolute, 'MatlabCommonTools'));
 % Experiments: each experiment is defined by a folder and a prefix for
 % function names
 
-PICKA = struct();
-
-i = 1;
-PICKA(i).folder = 'fishy';
-PICKA(i).prefix = 'fishy';
-
-i = i+1;
-PICKA(i).folder = 'CRM';
-PICKA(i).prefix = 'expe';
-
-i = i+1;
-PICKA(i).folder = 'gender';
-PICKA(i).prefix = 'gender';
-
-i = i+1;
-PICKA(i).folder = 'emotion';
-PICKA(i).prefix = 'emotion';
+PICKA = picka_definition();
 
 %------------------------------
 % If no subject name was provided, we prompt on the command line
 
 if nargin<1
     subject_name = input('Enter the subject ID: ', 's');
+end
+
+%------------------------------
+% If the subject name is empty, we create a new subject
+
+if isempty(subject_name)
+    fprintf('Creating new participant...\n');
+    participant = guiParticipantDetails();
+    if isempty(participant.name)
+        error('Aborted (participant name is empty).');
+    end
+    subject_name = participant.name;
 end
 
 %------------------------------

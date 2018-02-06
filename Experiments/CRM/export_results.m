@@ -65,8 +65,14 @@ switch fmt
         for i=1:length(files)
 
             fprintf('=====> Processing %s...\n', files{i});
-            load(fullfile(ref_options.result_path, files{i}));
+            dat = load(fullfile(ref_options.result_path, files{i}));
             
+            if ~isfield(dat, 'results')
+                fprintf('No results in %s.\n', files{i});
+                continue;
+            end
+            
+            results = dat.results;
             all_phases = fieldnames(results);
             
             for i_phase = 1:length(all_phases)
