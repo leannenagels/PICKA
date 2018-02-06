@@ -23,7 +23,8 @@ options.instructions.test = options.instructions.training;
 %----------- Signal options
 options.fs = 44100;
 
-options.attenuation_dB = 17; % General attenuation
+%options.attenuation_dB = 17; % General attenuation
+% EG: 2018-02-06 that shouldn't be necessary anymore
 
 options.ear = 'both'; % right, left or both
 

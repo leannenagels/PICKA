@@ -6,7 +6,12 @@ The purpose of this experiment is to evaluate speech on speech perception as a f
 
 ## Methods
 
-... [to be filled]...
+Two sentences are presented at the same time. The target sentence has the form "Tell the *dog* where the [colour] [number] is."
+The masker sentences come from the same corpus but where the object is a cat. The masker sentence is rendered less intelligible
+by piecing together chunks of random duration between 150 and 300 ms. Each chunk is ramped at onset and offset with a 2-ms raised cosine.
+The masker starts 750 ms before the target, and ends 250 ms after the target.
+
+The target sentence is the original voice, while the masker sentence differs from the target in F0 and VTL. The values for ΔF0 are [0, -6, -12] semitones. The ΔVTL values are [0, 1.9, 3.8] semitones. There are thus 9 different voices. The tested target-to-masker ratios are [-6, 0, 6] dB. For each condition (voice / TMR combination), there are 7 repetitions.
 
 ## Experimenter's notes
 
