@@ -6,7 +6,7 @@ The purpose of this experiment is to measure the just-noticeable-difference for 
 
 ## Methods
 
-The JNDs are measured using an adaptive 2-down/1-up 3I-3AFC where the intervals are each a triplet of syllables. The adaptive procedure starts with a difference of 12 semitones. The procedure stops after 8 reversals and the threshold is calculated as the average on the last 6 reversals. The JNDs are measured in two directions relative to a female voice: towards the F0 of a male voice, and towards the VTL of a male voice. Each measurement is only performed *once*.
+The JNDs are measured using an adaptive 2-down/1-up 3I-3AFC where the intervals are each a triplet of syllables. The adaptive procedure starts with a difference of 12 semitones. The procedure stops after 8 reversals and the threshold is calculated as the average on the last 6 reversals. The JNDs are measured in two directions relative to a female voice: towards the F0 of a male voice, and towards the VTL of a male voice. Each measurement is only performed *once* per block, and there are two blocks (`test_1` and `test_2`).
 
 ## Experimenter's notes
 

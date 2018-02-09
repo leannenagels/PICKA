@@ -19,9 +19,12 @@ if ~exist(res_filename, 'file')
     participant = struct();
 else
     dat = load(res_filename); % options, expe, results
-    participant = struct('name', dat.options.subject_name, 'language', dat.options.language, 'age');
+    participant = struct('name', dat.options.subject_name, 'language', dat.options.language);
     if isfield(dat.options, 'subject_age')
         participant.age = dat.options.subject_age;
+    end
+    if isfield(dat.options, 'subject_sex')
+        participant.sex = dat.options.subject_sex;
     end
     if ~isfield(dat, 'expe')
         progress = 0;

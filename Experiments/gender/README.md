@@ -15,13 +15,13 @@ A TV screen is displayed, with transmission noise. A word is played with a certa
 Before running the experiment, make sure to generate the stimuli by calling:
 
 ```matlab
->> gender_run(struct('name', 'generation', 'language', 'nl_nl', 'age', []));
+>> gender_run(struct('name', 'generation', 'language', 'nl_nl', 'age', [], 'sex', ''));
 ```
 
 To generate the British English stimuli, use:
 
 ```matlab
->> gender_run(struct('name', 'generation', 'language', 'en_gb', 'age', []));
+>> gender_run(struct('name', 'generation', 'language', 'en_gb', 'age', [], 'sex', ''));
 ```
 
 ### Run the experiment

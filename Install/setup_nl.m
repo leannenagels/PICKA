@@ -54,9 +54,11 @@ switch r
             catch
             end
         end
+        
     otherwise
         fprintf('\nInstallation aborted.\n');
 end
+
 %------------------------------------------
 function home = getHome()
 % return the path to the home folder indepently of OS (e.g. works in Linux,

@@ -94,6 +94,8 @@ def install(src, dst, lang):
         log.append("Copying files from \"%s\" to \"%s\"..." % (src,dst))
         copytree(src, dsta, ['*.m', '*.py', '*.wav', '*.png', '*.jpg', '*.md', '*.mex*'], ['tmp'])
         log.append('The copy has succeeded.')
+        # Remove the language files that are not needed
+        
     except Exception,e:
         log.append("An error occured during the copy.")
         errors.append(e)

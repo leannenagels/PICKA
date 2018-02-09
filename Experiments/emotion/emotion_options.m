@@ -45,5 +45,6 @@ options.experiment_label = 'PICKA :: Emotion';
     options.subject_name = participant.name;
     options.language = participant.language;
     options.subject_age = participant.age;
+    options.subject_sex = participant.sex;
     options.res_filename = fullfile(options.result_path, sprintf('%s%s.mat', options.result_prefix, options.subject_name));
 end

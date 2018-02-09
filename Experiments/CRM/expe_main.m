@@ -27,7 +27,7 @@ nbreak = 0;
 starting = 1;
 
 % Calibration & sound level
-if ~isfield(options, 'gain')
+if ~isfield(options, 'gain') || ~exist('expe_gain.m', 'file')
     if ~exist('expe_gain.m', 'file')
         warndlg({'Calibration was not performed!',...
             'We are using a gain of 0.0 dB for now...'}, options.experiment_label, 'modal');

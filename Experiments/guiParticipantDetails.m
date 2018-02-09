@@ -11,6 +11,12 @@ function [participant] = guiParticipantDetails(participant)
 % CNRS UMR 5292, FR | University of Groningen, UMCG, NL
 %--------------------------------------------------------------------------
 
+    if ~exist('struct_merge', 'file')
+        addpath('../Resources/lib/MatlabCommonTools');
+        commontools_added = true;
+    else
+        commontools_added = false;
+    end
 
     if nargin<1
         participant = default_participant();
@@ -214,6 +220,10 @@ function [participant] = guiParticipantDetails(participant)
 
     % close this figure
     close(gcf)
+    
+    if commontools_added
+        rmpath('../Resources/lib/MatlabCommonTools');
+    end
 end
 
 

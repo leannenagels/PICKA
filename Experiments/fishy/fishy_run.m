@@ -1,4 +1,4 @@
-function progress = fishy_run(participant)
+function progress = fishy_run(participant, phase)
 
 % note: with kids we want to split the experiment in two and so there
 % should be training test training test rather than training training test
@@ -6,6 +6,10 @@ function progress = fishy_run(participant)
 
 rng('shuffle')
 %run('../defineParticipantDetails.m')
+
+if nargin<2
+    phase = '';
+end
 
 options = fishy_options(struct(), participant);
 
@@ -24,7 +28,7 @@ if ~exist(options.res_filename, 'file')
     iphase = 1;
 else
     % Add message that the participant has already been tested...
-    fprintf('!! Subject "%s" has been tested before. Loading the result file...', options.subject_name);
+    fprintf('!! Subject "%s" has been tested before. Loading the result file...\n', options.subject_name);
     
     tmp = load(options.res_filename); % options, expe, results
     options = tmp.options;
@@ -38,7 +42,9 @@ else
     end
 end
 
-phase = expe.phases{iphase};
+if isempty(phase)
+    phase = expe.phases{iphase};
+end
 
 % EG: Let's not call fishy_build_conditions again because if the file's
 % been modified between two sessions, we will be erasing properties of the

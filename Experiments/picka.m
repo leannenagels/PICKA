@@ -46,6 +46,11 @@ if isempty(subject_name)
         error('Aborted (participant name is empty).');
     end
     subject_name = participant.name;
+    %for k=1:length(PICKA)
+    %    PICKA(k).participant = participant;
+    %end
+else
+    participant = struct();
 end
 
 %------------------------------
@@ -64,6 +69,8 @@ for i=1:length(PICKA)
     end
     fprintf('\n');
     cd('..');
+    
+    PICKA(i).participant = struct_merge(PICKA(i).participant, participant);
 end
 
 
@@ -94,7 +101,6 @@ h.Position = [0,0,lm+rm+bm*(ncols-1)+pw*ncols, bm+tm+nrows*(vm+ph)];
 
 h.UserData = struct();
 
-h.UserData.PICKA = PICKA;
 h.UserData.subject_name = subject_name;
 
 % Controls
@@ -109,7 +115,7 @@ for i=1:length(PICKA)
             str{end+1} = sprintf('Language: %s', PICKA(i).participant.language);
         end
         if isfield(PICKA(i).participant, 'age')
-            str{end+1} = sprintf('Age: %s', PICKA(i).participant.age);
+            str{end+1} = sprintf('Age: %d', floor(PICKA(i).participant.age));
         end
         if isempty(str)
             str = 'No information';
@@ -163,6 +169,7 @@ end
 
 center_figure(h);
 h.Visible = 'on';
+h.UserData.PICKA = PICKA;
 
 %======================================================
 function start_experiment(src, event, i, phase)
@@ -177,40 +184,46 @@ end
 % If phase starts with training and training has been done, then we have to
 % reset it.
 
+    
+% We try to collect participant information from other experiments
+participant = struct();
+for k=1:length(h.UserData.PICKA)
+    participant.name = h.UserData.subject_name;
+    if ~isempty(h.UserData.PICKA(k).participant)
+        if isfield(h.UserData.PICKA(k).participant, 'language')
+            participant.language = h.UserData.PICKA(k).participant.language;
+        end
+        if isfield(h.UserData.PICKA(k).participant, 'age')
+            participant.age = h.UserData.PICKA(k).participant.age;
+        end
+        if isfield(h.UserData.PICKA(k).participant, 'sex')
+            participant.sex = h.UserData.PICKA(k).participant.sex;
+        end
+    end
+end
+
+% If the participant information is incomplete, we start the participant GUI
+while ~isfield(participant, 'language') || ~isfield(participant, 'age') || ~isfield(participant, 'sex') || isempty(participant.language) || isempty(participant.age) || isempty(participant.sex)
+    participant = guiParticipantDetails(participant);
+end
+
 try
     cd( h.UserData.PICKA(i).folder );
     fx_run = str2func([h.UserData.PICKA(i).prefix, '_run']);
-    
-    % We try to collect participant information from other experiments
-    participant = struct();
-    for i=1:length(h.UserData.PICKA)
-        participant.name = h.UserData.subject_name;
-        if ~isempty(h.UserData.PICKA(i).participant)
-            if isfield(h.UserData.PICKA(i).participant, 'language')
-                participant.language = h.UserData.PICKA(i).participant.language;
-            end
-            if isfield(h.UserData.PICKA(i).participant, 'age')
-                participant.age = h.UserData.PICKA(i).participant.age;
-            end
-        end
-    end
-    
-    % If the participant information is incomplete, we start the participant GUI
-    addpath('..');
-    while ~isfield(participant, 'language') || ~isfield(participant, 'age') || isempty(participant.language) || isempty(participant.age)
-        participant = guiParticipantDetails(participant);
-    end
-    rmpath('..');
     
     % We start the experiment    
     fx_run(participant, phase);
     
 catch err
     cd('..');
+    close(h);
     err.rethrow();
 end
     
 cd('..');
+
+close(h);
+picka(participant.name);
 
 %======================================================
 function center_figure(h)

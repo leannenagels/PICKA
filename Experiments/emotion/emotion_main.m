@@ -75,15 +75,30 @@ function emotion_main(options, phase)
     %G.onKeyPress = @keypressfcn;
     
     
-    % Calibration & sound level
-    if ~isfield(options, 'gain')
+    % Calibration & sound level    
+    if ~isfield(options, 'gain') || ~exist('emotion_gain.m', 'file')
         if ~exist('emotion_gain.m', 'file')
             warndlg({'Calibration was not performed!',...
-                'We are using a gain of 0.0 dB for now...'}, 'PICKA :: Emotion', 'modal');
+                'We are using a gain of 0.0 dB for now...'}, options.experiment_label, 'modal');
+            uiwait();
             options.gain = 0;
         else
             options.gain = emotion_gain();
         end
+    elseif options.gain ~= emotion_gain()
+        b1 = sprintf('Keep the result file''s gain (%.1f dB)', options.gain);
+        b2 = sprintf('Change to the EMOTION_GAIN value (%.1f dB)', emotion_gain());
+        blb = questdlg(sprintf('The GAIN in the results file (%.1f dB) is different from the gain in EMOTION_GAIN (%.1f dB).', options.gain, emotion_gain()), ...
+                options.experiment_label, b1, b2, b1);
+        switch blb
+            case b2
+                if ~isfield(options, 'comments')
+                    options.comments = {};
+                end
+                options.comments{end+1} = sprintf('Gain was updated from %.1f dB to %.1f dB on %s', options.gain, emotion_gain(), datestr(now()));
+                options.gain = emotion_gain();
+        end
+
     end
     check_sound_volume_warning(options.subject_name);
     
@@ -116,6 +131,9 @@ function emotion_main(options, phase)
     %% ============= Main loop =============   
     ladderStep = 1;
     starting = 0;
+    
+    itrial_session = 0;
+    
     % We keep going while there are some undone trials
     while any([expe.( phase ).trials.done]~=1)
         if ~simulateSubj
@@ -127,9 +145,10 @@ function emotion_main(options, phase)
         end
         
         itrial = find([expe.( phase ).trials.done]==0, 1, 'first');
+        itrial_session = itrial_session + 1;
         trial = expe.(phase).trials(itrial);
                 
-        if itrial == 1
+        if itrial_session == 1
             % for training no pool or clowns
             switch phase
                 case 'training'
@@ -179,7 +198,7 @@ function emotion_main(options, phase)
 %         toPlay = randperm(length(emotionvoices(indexes)),1);
         %[y, Fs] = audioread([options.soundDir emotionvoices(itrial).name]);
         [y, Fs] = audioread(fullfile(options.sound_folder, trial.file));
-        player = audioplayer(y, Fs);
+        player = audioplayer(y*10.^(options.gain/20), Fs, 24);
         iter = 1;
         play(player)
         tic();       
@@ -252,7 +271,7 @@ function emotion_main(options, phase)
         % reached the top (clownladder_7b)
         if strcmp(phase, 'test')
             nStep = [2, 5, 8, 10, 13, 16, 18, 20, 23, 26, 28, 31, 34, 36];
-            if ismember(itrial,nStep)==1
+            if ismember(itrial_session,nStep)==1
                 Clownladder.State = sprintf('clownladder_%d%c', ladderStep,'a');
                 pause (0.2)
                 Clownladder.State = sprintf('clownladder_%d%c', ladderStep,'b');

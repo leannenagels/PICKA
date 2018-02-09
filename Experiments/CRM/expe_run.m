@@ -38,7 +38,7 @@ end
 options.language = language;
 
 options.subject_age = participant.age;
-
+options.subject_sex = participant.sex;
 
 %-------------------------------------------------
 
@@ -74,6 +74,7 @@ end
 
 % If the phase wasn't provided, we determine which it should be
 if isempty(phase)
+    load(res_filename);
     phases = {'training', 'test'};
     for i=1:length(phases)
        phase = phases{i};

@@ -18,6 +18,8 @@ function options = gender_options(options)
     
     options.sound_path = '../../Resources/sounds/gender/';
     options.tmp_path   = '../../Resources/tmp/gender/';
+    
+    options.experiment_label = 'PICKA :: Gender';
 
     % EG: isempty does not work here
     %if isempty(dir(options.sound_path))

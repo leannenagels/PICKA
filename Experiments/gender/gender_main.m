@@ -7,10 +7,11 @@ function gender_main(expe, options, phase, results)
     %results = struct();
     
     % Calibration & sound level
-    if ~isfield(options, 'gain')
+    if ~isfield(options, 'gain') || ~exist('gender_gain.m', 'file')
         if ~exist('gender_gain.m', 'file')
             warndlg({'Calibration was not performed!',...
                 'We are using a gain of 0.0 dB for now...'}, options.experiment_label, 'modal');
+            uiwait();
             options.gain = 0;
         else
             options.gain = gender_gain();

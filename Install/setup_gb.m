@@ -47,7 +47,7 @@ switch r
         mod = py.importlib.import_module('manage_picka');
         py.reload(mod);
         fprintf('\n\n');
-        py.manage_picka.main(py.list({'install', src, dst, 'en_gb'}));
+        success = py.manage_picka.main(py.list({'install', src, dst, 'en_gb'}));
         if success==0
             try
                 delete('manage_picka.p*', 'setup_gb.m');

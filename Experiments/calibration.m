@@ -12,7 +12,8 @@ function calibration(language)
     warning('off');
 
     if nargin<1
-        language = 'nl_nl';
+        participant = default_participant();
+        language = participant.language;
     end
 
     % ask to make sure that system volume is at max

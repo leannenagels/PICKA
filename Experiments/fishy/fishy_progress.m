@@ -23,6 +23,9 @@ else
     if isfield(dat.options, 'subject_age')
         participant.age = dat.options.subject_age;
     end
+    if isfield(dat.options, 'subject_sex')
+        participant.sex = dat.options.subject_sex;
+    end
     if ~isfield(dat, 'expe')
         progress = 0;
         phases   = {};

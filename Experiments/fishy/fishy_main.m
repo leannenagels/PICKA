@@ -34,11 +34,12 @@ function fishy_main(res_filename, phase)
         expe.training.conditions(1).done = 0;
     end
     
-   % Calibration & sound level
-    if ~isfield(options, 'gain')
+    % Calibration & sound level
+    if ~isfield(options, 'gain') || ~exist('fishy_gain.m', 'file')
         if ~exist('fishy_gain.m', 'file')
             warndlg({'Calibration was not performed!',...
                 'We are using a gain of 0.0 dB for now...'}, options.experiment_label, 'modal');
+            uiwait();
             options.gain = 0;
         else
             options.gain = fishy_gain();

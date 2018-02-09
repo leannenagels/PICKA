@@ -1,4 +1,4 @@
-function [training, test, options] = expe_build_conditions(options)
+function [expe, options] = expe_build_conditions(options)
 
 % Setups all conditions that will be tested in the experiment
 

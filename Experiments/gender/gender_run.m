@@ -12,6 +12,7 @@ function gender_run(participant, phase)
     options.subject_name = participant.name;
     options.language     = participant.language;
     options.subject_age  = participant.age;
+    options.subject_sex  = participant.sex;
     % options.stage = 'generation'; uncomment o generate sounds stimuli
     %phase = 'test';
     %options.stage = phase;
@@ -43,12 +44,14 @@ function gender_run(participant, phase)
             load(options.res_filename); % options, expe, results
         end
         if isempty(phase)
-            phases = {'training', 'test'};
+            phases = fieldnames(expe);
             for i=1:length(phases)
-               phase = phases{i};
-               if any([expe.(phase).trials.done]~=1)    
-                   break
-               end
+                phase = phases{i};
+                if startswith(phase, 'training') || startswith(phase, 'test')
+                    if any([expe.(phase).trials.done]~=1)    
+                        break
+                    end
+                end
             end
         end
         gender_main(expe, options, phase, results);

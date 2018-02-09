@@ -22,6 +22,9 @@ if exist(res_filename, 'file')
     if isfield(dat.options, 'subject_age')
         participant.age = dat.options.subject_age;
     end
+    if isfield(dat.options, 'subject_sex')
+        participant.sex = dat.options.subject_sex;
+    end
     if isfield(dat, 'expe') && isfield(dat.expe, 'test')
         p = mean([dat.expe.test.trials.done]);
         diagnostic = fieldnames(dat.expe);
