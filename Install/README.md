@@ -30,8 +30,24 @@ Open Matlab, navigate to that directory and execute the setup script and follow 
 
 If all went well, that's it! You've installed PICKA! See the general manual for details on how to run the experiments.
 
+## After the installation
 
+You need to do two things after the installation: pre-process the stimuli, and calibrate.
 
+Pre-processing the stimuli will not only speed up the experiment, but it will also make a more accurate calibration. To run the pre-processing of all stimuli, run:
+
+```matlab
+>>> preprocess_picka();
+```
+
+That may take a while...
+
+To run the calibration, run:
+```matlab
+>>> calibration();
+```
+
+See the calibration section in the main PICKA [README](../README.md) for details.
 
 
 
