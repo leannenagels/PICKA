@@ -98,7 +98,7 @@ function gender_main(expe, options, phase, results)
         xOut = [zeros(round(options.fs*.5),size(xOut,2)); xOut];
         xOut = xOut * 10^(options.gain/20);
 
-        player = audioplayer(xOut, fs, 16);
+        player = audioplayer(xOut, fs, 24);
         pause(.5);
         iter = 1;
         

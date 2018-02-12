@@ -108,7 +108,7 @@ function [i_correct, player, isi, trial] = fishy_make_stim(options, difference, 
         %fprintf('Interval %d max: %.2f\n', i, max(abs(x(:))));
     end
 
-    isi = audioplayer(zeros(floor(.2*fs), 2), fs);
+    isi = audioplayer(zeros(floor(.2*fs), 2), fs, 24);
 end        
 
 %--------------------------------------------------------------------------

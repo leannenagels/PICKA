@@ -85,6 +85,9 @@ function calibration(language)
             if ~isfield(options, 'sounds_for_calibration')
                 error('The options structure does not contain "sounds_for_calibration"');
             end
+            if isempty(options.sounds_for_calibration)
+                error('There are not sounds for calibration. Perhaps you need to pre-process first...');
+            end
             fprintf('   Checking if RMS of calibration sounds are equal...\n');
             x = [];
             RMSs = zeros(length(options.sounds_for_calibration),1);
@@ -206,6 +209,7 @@ function calibration(language)
             % We stop the sound
             stop(experiments(exp_index).player);
             fill([0, 1, 1, 0], [0, 0, 1, 1], 'w', 'Parent', experiments(exp_index).pgax);
+            set(experiments(exp_index).pgax, 'XLim', [0,1], 'YLim', [0,1], 'XTick', [], 'YTick', []);
             experiments(exp_index).play_button.String = 'play';
         end
         

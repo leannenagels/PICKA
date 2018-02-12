@@ -2,7 +2,7 @@ function preprocess_picka()
 
 participant = default_participant();
 
-fprintf('\nWould you like to preprocess all the stimuli? It takes about 30 min...\n');
+fprintf('\nWould you like to preprocess all the stimuli? It takes about 5 min...\n');
 r = input('yes | no: ', 's');
 
 r = lower(r(1));
