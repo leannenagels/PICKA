@@ -1,7 +1,5 @@
-<img src="https://github.com/egaudrain/PICKA/blob/master/Resources/images/html/PICKA-3-600dpi.png" width="150">
-<span style='width: 200px'></span>
-<img src="https://github.com/egaudrain/PICKA/blob/master/Resources/images/html/rug.png" height="50">
-<img src="https://github.com/egaudrain/PICKA/blob/master/Resources/images/html/umcg.png" height="50">
+<img src="https://github.com/egaudrain/PICKA/blob/master/Resources/images/html/PICKA-3-600dpi.png" width="150"><span style='width: 200px'></span><img src="https://github.com/egaudrain/PICKA/blob/master/Resources/images/html/rug.png" height="50"><img src="https://github.com/egaudrain/PICKA/blob/master/Resources/images/html/umcg.png" height="50">
+
 
 # PICKA – Perception of Indexical Cues in Kids and Adults
 
