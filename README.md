@@ -1,4 +1,7 @@
-<img src="../master/Resources/images/html/PICKA-3-600dpi.png" width="150">
+<img src="https://github.com/egaudrain/PICKA/blob/master/Resources/images/html/PICKA-3-600dpi.png" width="150">
+<span style='width: 200px'></span>
+<img src="https://github.com/egaudrain/PICKA/blob/master/Resources/images/html/rug.png" height="50">
+<img src="https://github.com/egaudrain/PICKA/blob/master/Resources/images/html/umcg.png" height="50">
 
 # PICKA – Perception of Indexical Cues in Kids and Adults
 
@@ -20,7 +23,7 @@ __XLS__ files are provided here only for convenience. Remember that the data is 
 
 Calibration is an important part of any psychophysical experiment, especially when a population with hearing deficiencies is tested. The calibration procedure not only ensures that the experiment is repeatable, but also that the presentation level is appropriate for the listeners taking part in the experiment.
 
-For PICKA, the aim of the calibration is that all stimuli are presented at a sound pressure level of _65 dB(A)_. This level ensures audibility in normal hearing listeners, as well as hearing impaired listeners using a prosthetic device.
+For PICKA, the aim of the calibration is that all stimuli are presented at a sound pressure level of __65 dB(A)__. This level ensures audibility in normal hearing listeners, as well as hearing impaired listeners using a prosthetic device.
 
 To facilitate the calibration, PICKA comes with GUI gathering all the experiments. To start it, from the `Experiments` folder, just run:
 
@@ -30,14 +33,14 @@ To facilitate the calibration, PICKA comes with GUI gathering all the experiment
 
 Then, take the following steps:
 
-	1. Set the volume of your computer to max. On Windows, there might be separate volumes for different applications: set Matlab and the System volume to max.
+1. Set the volume of your computer to max. On Windows, there might be separate volumes for different applications: set Matlab and the System volume to max.
 
-	2. Play the sound through the equipment that will be used for the actual experiment (computer, soundcard, headphones/loudspeakers).
+2. Play the sound through the equipment that will be used for the actual experiment (computer, soundcard, headphones/loudspeakers).
 
-	3. Measure the sound level from a KEMAR attached to a sound level meter.
+3. Measure the sound level from a KEMAR attached to a sound level meter.
 
-	4. Adjust the gain field so reach a level of 65 dB(A). Negative values will attenuate the sound. Positive values are forbidden as they would result in the clipping of some stimuli.
+4. Adjust the gain field so reach a level of 65 dB(A). Negative values will attenuate the sound. Positive values are forbidden as they would result in the clipping of some stimuli.
 
-	5. Once satisfied with all the gains, click "Save gains to files".
+5. Once satisfied with all the gains, click "Save gains to files".
 
 When calling the `calibration` function, Matlab will check that all the sounds necessary are present, and that the different stimuli used for an experiment have been equalised in RMS (i.e. all the sound files have the same RMS).
