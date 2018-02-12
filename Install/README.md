@@ -6,7 +6,7 @@ This document describes how to install PICKA on your machine.
 
 * You are supposed to have been granted access to the Google Drive repository where PICKA is available. Note that the Github only contains the source code, but not the audio and visual resources.
 
-* You need to have a Google Drive folder, locally, on your machine, synchronized with the online resource. In other words, you need to install Google Drive for desktop — now called "Backup and Sync" (https://www.google.com/drive/download/). When you setup Google Drive, you can specify that you want to synchronize only one directory (it is advisable to have only the PICKA directory synchronized on your test machine). Also, by default, Google Drive with synchronize your Pictures and Videos directory. Better untick that before you start synchronizing. Now wait for Google Drive to download everything.
+* You need to have a Google Drive folder, locally, on your machine, synchronized with the online resource. In other words, you need to install Google Drive for desktop — now called "Backup and Sync" (https://www.google.com/drive/download/). When you setup Google Drive, you can specify that you want to synchronize only one directory (it is advisable to have only the PICKA directory synchronized on your test machine). Also, by default, Google Drive will synchronize your Pictures and Videos directory. Better untick that before you start synchronizing. Now wait for Google Drive to download everything.
 
 * You need to have Matlab, R2015b or newer, with the signal processing toolbox.
 
