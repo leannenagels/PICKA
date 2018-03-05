@@ -1,4 +1,4 @@
-function expe_run(subject, phase, language)
+function expe_run(participant, phase)
 
 % expe_run(subject, phase)
 %   phase can be: 'training', 'test'
@@ -11,32 +11,39 @@ function expe_run(subject, phase, language)
 % CNRS UMR 5292, FR | University of Groningen, UMCG, NL
 %--------------------------------------------------------------------------
 
+options = struct();
+options = expe_options();
+
+%-------------------------------------------------
+addpath(options.path.straight);
+addpath(options.path.tools);
+
+
 % Adjust to which language you want as default
-if nargin<3
-    language = 'nl_nl';
+if ~isfield(participant, 'language')
+    participant.language = 'nl_nl';
 end
 
-language = normalize_language(language);
+%-------------------------------------------------
+subject = participant.name;
+options.subject_name = participant.name;
 
+language = normalize_language(participant.language);
 switch language
     case 'nl'
         language = 'nl_nl';
     case 'en'
         language = 'en_gb';
 end
-
-%-------------------------------------------------
-
-options = struct();
 options.language = language;
-options = expe_options(options);
 
-options.subject_name  = subject;
+options.subject_age = participant.age;
+options.subject_sex = participant.sex;
 
 %-------------------------------------------------
 
-addpath(options.path.straight);
-addpath(options.path.tools);
+%options = struct();
+% options = expe_options(options);
 
 %-------------------------------------------------
 
@@ -48,11 +55,11 @@ end
 res_filename = fullfile(options.result_path, sprintf('%s%s.mat', options.result_prefix, subject));
 options.res_filename = res_filename;
 
-if exist(res_filename)~=2
-    opt = char(questdlg(sprintf('The subject "%s" doesn''t exist. Create it?', subject), options.experiment_label,'OK','Cancel','OK'));
+if ~exist(res_filename, 'file')
+    opt = char(questdlg(sprintf('The participant"%s" doesn''t exist. Create it?', subject), options.experiment_label,'OK','Cancel','OK'));
     switch lower(opt)
-        case 'ok',
-            [training, test, options] = expe_build_conditions(options);
+        case 'ok'
+            [~, options] = expe_build_conditions(options);
         case 'cancel'
             return
         otherwise
@@ -65,6 +72,17 @@ else
     end
 end
 
+% If the phase wasn't provided, we determine which it should be
+if isempty(phase)
+    load(res_filename);
+    phases = {'training', 'test'};
+    for i=1:length(phases)
+       phase = phases{i};
+       if any([expe.(phase).trials.done]~=1)    
+           break
+       end
+    end
+end
 expe_main(options, phase);
 
 %-------------------------------------------------

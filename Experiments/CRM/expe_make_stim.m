@@ -22,6 +22,8 @@ if fs~=options.fs
     fs = options.fs;
 end
 
+options.reference_rms = 0.0823/sqrt(2);
+
 if trial.tmr >=0
     x = x / rms(x) * options.reference_rms;
 else
@@ -48,7 +50,7 @@ end
 
 z = target + masker;
 
-info.masker = masker_struct();
+info.masker = masker_struct;
 
 
 

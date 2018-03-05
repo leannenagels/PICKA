@@ -1,5 +1,13 @@
 function export_filename = export_results(fmt)
 
+% PICKA Fishy: Process the raw result .mat files into sqlite, csv or xls.
+% Note: the training phase is not filled in the table.
+
+%--------------------------------------------------------------------------
+% Etienne Gaudrain <etienne.gaudrain@cnrs.fr> - 2017-12-02
+% CNRS UMR 5292, FR | University of Groningen, UMCG, NL
+%--------------------------------------------------------------------------
+
 ref_options = fishy_options();
 
 lst = dir(fullfile(ref_options.result_path, [ref_options.result_prefix, '*.mat']));
@@ -12,7 +20,7 @@ switch fmt
         export_filename = fullfile(ref_options.result_path, [ref_options.result_prefix, 'db.sqlite']);
         
         %-- Check if we need to regenerate the database
-        if exist(export_filename, 'file') && last_filedate < get_filedate(export_filename)
+        if exist(export_filename, 'file') & last_filedate < get_filedate(export_filename)
             fprintf('The database file is more recent that the most recent data file, so we are not recreating the database.\n');
             fprintf('To force the creation of the database, delete the sqlite file "%s".\n', export_filename);
             return
@@ -26,8 +34,8 @@ switch fmt
         mksqlite('PRAGMA journal_mode=OFF');
         
         %-- Tables creation
-        mksqlite('DROP TABLE IF EXISTS thr');
-        mksqlite(['CREATE TABLE IF NOT EXISTS thr '...
+        mksqlite('DROP TABLE IF EXISTS results');
+        mksqlite(['CREATE TABLE IF NOT EXISTS results '...
                   '('...
                   'id INTEGER PRIMARY KEY AUTOINCREMENT, '...
                   'subject TEXT, '...
@@ -77,12 +85,12 @@ switch fmt
 
                         r.subject = options.subject_name;
 
-                        r.ref_f0 = options.(phase).voices(t.ref_voice).f0;
-                        r.dir_f0 = options.(phase).voices(t.dir_voice).f0;
-                        r.ref_ser = options.(phase).voices(t.ref_voice).ser;
-                        r.dir_ser = options.(phase).voices(t.dir_voice).ser;
-                        r.ref_voice = options.(phase).voices(t.ref_voice).label;
-                        r.dir_voice = options.(phase).voices(t.dir_voice).label;
+                        r.ref_f0 = options.test.voices(t.ref_voice).f0;
+                        r.dir_f0 = options.test.voices(t.dir_voice).f0;
+                        r.ref_ser = options.test.voices(t.ref_voice).ser;
+                        r.dir_ser = options.test.voices(t.dir_voice).ser;
+                        r.ref_voice = options.test.voices(t.ref_voice).label;
+                        r.dir_voice = options.test.voices(t.dir_voice).label;
 
             %             r.vocoder = t.vocoder;
             %             if r.vocoder>0
@@ -105,19 +113,19 @@ switch fmt
                             r.threshold = mean(a.differences(i_tp));
                         end
 
-                        u_f0  = 12*log2(options.(phase).voices(t.dir_voice).f0 / options.(phase).voices(t.ref_voice).f0);
-                        u_ser = 12*log2(options.(phase).voices(t.dir_voice).ser / options.(phase).voices(t.ref_voice).ser);
+                        u_f0  = 12*log2(options.test.voices(t.dir_voice).f0 / options.test.voices(t.ref_voice).f0);
+                        u_ser = 12*log2(options.test.voices(t.dir_voice).ser / options.test.voices(t.ref_voice).ser);
                         u = [u_f0, u_ser];
                         u = u / sqrt(sum(u.^2));
 
                         r.threshold_f0 = r.threshold*u(1);
-                        r.threshold_ser = r.threshold*u(2);
+                        r.threshold_vtl = -r.threshold*u(2);
 
                         r.response_datetime = datestr(a.responses(1).timestamp, 'yyyy-mm-dd HH:MM:SS');
                         r.sd = a.sd;
                         r.i = ic;
 
-                        mksqlite_insert(db, 'thr', r);
+                        mksqlite_insert(db, 'results', r);
                     end
 
                 end % conditions
@@ -136,10 +144,14 @@ switch fmt
         
         db_filename = export_results('sqlite');
         
-        [c, s] = system(sprintf('python ../../Resources/lib/python/sqlite_to_table.py "%s" "%s"', db_filename, export_filename));
+        %[c, s] = system(sprintf('python ../../Resources/lib/python/sqlite_to_table.py "%s" "%s"', db_filename, export_filename));
+        append(py.sys.path, '../../Resources/lib/python');
+        mod = py.importlib.import_module('sqlite_to_table');
+        py.reload(mod);
+        c = py.sqlite_to_table.main(py.list({db_filename, export_filename}));
         
         if c~=0
-            error(s);
+            error('Excution of the Python sqlite_to_table.py failed...');
         end
     otherwise
         error('Export format "%s" is not implemented.', fmt);

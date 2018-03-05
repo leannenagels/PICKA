@@ -1,12 +1,15 @@
-function progress = fishy_run(participant)
+function progress = fishy_run(participant, phase)
 
 % note: with kids we want to split the experiment in two and so there
 % should be training test training test rather than training training test
 % test. 
 
 rng('shuffle')
-run('../guiParticipantDetails.m')
-participant=ans;
+%run('../defineParticipantDetails.m')
+
+if nargin<2
+    phase = '';
+end
 
 options = fishy_options(struct(), participant);
 
@@ -25,7 +28,7 @@ if ~exist(options.res_filename, 'file')
     iphase = 1;
 else
     % Add message that the participant has already been tested...
-    fprintf('!! Subject "%s" has been tested before. Loading the result file...', options.subject_name);
+    fprintf('!! Subject "%s" has been tested before. Loading the result file...\n', options.subject_name);
     
     tmp = load(options.res_filename); % options, expe, results
     options = tmp.options;
@@ -39,7 +42,9 @@ else
     end
 end
 
-phase = expe.phases{iphase};
+if isempty(phase)
+    phase = expe.phases{iphase};
+end
 
 % EG: Let's not call fishy_build_conditions again because if the file's
 % been modified between two sessions, we will be erasing properties of the
@@ -61,11 +66,6 @@ if startswith(phase, 'training')
     fishy_main(options.res_filename, phase);
 end
 
-%------------------------------------------
-% Clean up the path
-for ipath = 1 : length(paths2Add)
-    rmpath(paths2Add{ipath});
-end
 
 %------------------------------------------
 % Calculate progress
@@ -74,8 +74,15 @@ if is_empty(expe)
     progress = 0;
 else
     p = [];
-    for iphase = 1 : length(expe.phases)
-        p = [p, [expe.(expe.phases{iphase}).conditions.done]];
+    for iphase = 1 : length(expe.expe.phases)
+        p = [p, [expe.expe.(expe.expe.phases{iphase}).conditions.done]];
     end
     progress = mean(p);
+end
+
+
+%------------------------------------------
+% Clean up the path
+for ipath = 1 : length(paths2Add)
+    rmpath(paths2Add{ipath});
 end

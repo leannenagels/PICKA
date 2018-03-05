@@ -1,33 +1,28 @@
-function gender_run
+function gender_run(participant, phase)
+
+    if nargin<2
+        phase = [];
+    end
 
     rng('shuffle')
-%     run('../defineParticipantDetails.m')
-    run('../guiParticipantDetails.m')
-    participant=ans;
+    % EG: we want to pass in the participant manually to make sure we have
+    % the right one...
+    %run('../defineParticipantDetails.m')
 
-    options = gender_options(struct(), participant);
-
+    options.subject_name = participant.name;
+    options.language     = participant.language;
+    options.subject_age  = participant.age;
+    options.subject_sex  = participant.sex;
+    % options.stage = 'generation'; uncomment o generate sounds stimuli
+    %phase = 'test';
+    %options.stage = phase;
+    options = gender_options(options);
     
-    phase = 'test';
-    options.stage = phase;
+    addpath(options.path.straight);
+    addpath(options.path.spritekit);
+    addpath(options.path.tools);
     
-    paths2Add = {options.path.spritekit, options.path.tools}; 
-    for ipath = 1 : length(paths2Add)
-        if ~exist(paths2Add{ipath}, 'dir')
-            error([paths2Add{ipath} ' does not exists, check the ../']);
-        else
-            addpath(paths2Add{ipath});
-        end
-    end
-    
-    
-%     options.subject_name = participant.name;
-%     options.language = lower(participant.language);
-%     % options.stage = 'generation'; uncomment o generate sounds stimuli
-%     phase = 'test';
-%     options.stage = phase;
-%     options.Bert = false;
-%     options = gender_options(options);
+    options.language = normalize_language(options.language);
     
     % Check if results directory exists otherwise make one.
     if ~exist(options.result_path, 'dir')
@@ -37,27 +32,32 @@ function gender_run
     % Print results file 'exp_subjectname'
     res_filename = fullfile(options.result_path, sprintf('%s%s.mat', options.result_prefix, options.subject_name));
     options.res_filename = res_filename;
-    
-    
-    
-%     addpath(options.straight_path);
-%     addpath(options.spriteKitPath);
 
-    
-    if strcmp(options.stage, 'generation')
-        generateStimuli(options, phase);
+    if strcmp(participant.name, 'generation')
+        generateStimuli(options);
+        delete(options.res_filename);
     else    
+        results = struct();
         if ~exist(res_filename, 'file')
-            [expe, options] = gender_buildingconditions(options);
+            [expe, options] = gender_build_conditions(options);
         else
             load(options.res_filename); % options, expe, results
         end
-        gender_main(expe, options, phase);
+        if isempty(phase)
+            phases = fieldnames(expe);
+            for i=1:length(phases)
+                phase = phases{i};
+                if startswith(phase, 'training') || startswith(phase, 'test')
+                    if any([expe.(phase).trials.done]~=1)    
+                        break
+                    end
+                end
+            end
+        end
+        gender_main(expe, options, phase, results);
     end % end if generate
 
-%     rmpath(options.straight_path);
-%     rmpath(options.spriteKitPath);    
-    for ipath = 1 : length(paths2Add)
-        rmpath(paths2Add{ipath});
-    end
+    rmpath(options.path.straight);
+    rmpath(options.path.spritekit);
+    rmpath(options.path.tools);
 end

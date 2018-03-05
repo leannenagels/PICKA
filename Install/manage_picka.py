@@ -1,6 +1,15 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
+# Some functions to install and manage the PICKA source code. These are called
+# from Matlab's setup_nl.m and setup_gb.m. In fact, the source code is included
+# in base64 form into the Matlab file itself thanks to make_setup.py.
+
+#--------------------------------------------------------------------------
+# Etienne Gaudrain <etienne.gaudrain@cnrs.fr> - 2018-05-02
+# CNRS UMR 5292, FR | University of Groningen, UMCG, NL
+#--------------------------------------------------------------------------
+
 import shutil, os, sys, zipfile, time, socket, fnmatch
 
 # If we want to copy to a zip file
@@ -44,7 +53,7 @@ def snapshot(install_dir, snapshot_dir, code_only=True, compress=True):
     if code_only:
         copytree(install_dir, dst, ['*.m', '*.py'])
     else:
-        copytree(install_dir, dst, ['*.m', '*.py', '*.wav', '*.png', '*.jpg', '*.md'], ['tmp'])
+        copytree(install_dir, dst, ['*.m', '*.py', '*.wav', '*.png', '*.jpg', '*.md', '*.html'], ['tmp'])
 
 def copytree(src, dst, patterns, exclude=[]):
     # patterns are included
@@ -62,7 +71,7 @@ def copytree(src, dst, patterns, exclude=[]):
                     dst.add(os.path.join(dirpath, f))
                     break
 
-def install(src, dst):
+def install(src, dst, lang):
     log = []
     errors = []
     # If dst is not empty, we take a snapshot
@@ -83,14 +92,39 @@ def install(src, dst):
     dsta = archive_folder(dst, src)
     try:
         log.append("Copying files from \"%s\" to \"%s\"..." % (src,dst))
-        copytree(src, dsta, ['*.m', '*.py', '*.wav', '*.png', '*.jpg', '*.md'], ['tmp'])
+        copytree(src, dsta, ['*.m', '*.py', '*.wav', '*.png', '*.jpg', '*.md', '*.mex*'], ['tmp'])
         log.append('The copy has succeeded.')
+        # Remove the language files that are not needed
+
+    except Exception,e:
+        log.append("An error occured during the copy.")
+        errors.append(e)
+
+    log_l, errors_l = localize(dst, lang)
+    log.extend(log_l)
+    errors.extend(errors_l)
+
+    return log, errors
+
+#==============================================================================
+def localize(dst, lang):
+    log = []
+    errors = []
+    try:
+        f = open(os.path.join(dst, 'Experiments', 'default_participant.m'), 'rb')
+        nf = []
+        for l in f:
+            if l.strip().startswith('participant.language = '):
+                nf.append("    participant.language = '%s';" % lang)
+            else:
+                nf.append(l)
+        f.close()
+        open(os.path.join(dst, 'Experiments', 'default_participant.m'), 'wb').write('\n'.join(nf))
     except Exception,e:
         log.append("An error occured during the copy.")
         errors.append(e)
 
     return log, errors
-
 
 #==============================================================================
 
@@ -103,21 +137,23 @@ def main(argv):
 
     if len(argv)<3:
         print "You need to provide a command followed by two path names."
-        exit(1)
+        return 1
 
     if argv[0] not in ['install', 'snapshot']:
         print "The valid commands are 'install' and 'snapshot'."
-        exit(1)
+        return 2
 
     if argv[0]=='install':
-        log, errors = install(argv[1], argv[2])
+        log, errors = install(argv[1], argv[2], argv[3])
         print "\n".join(log)
         if len(errors)>0:
             print "---Errors:"
             print "\n".join([str(e) for e in errors])
-            exit(1)
+            return 3
     elif argv[0]=='snapshot':
         snapshot(argv[1], argv[2])
+
+    return 0
 
 #==============================================================================
 

@@ -12,8 +12,9 @@ options.path.tools    = '../../Resources/lib/MatlabCommonTools';
 options.path.mksqlite = '../../Resources/lib/mksqlite';
 options.path.spritekit = '../../Resources/lib/SpriteKit';
 
+options.experiment_label = 'PICKA :: Fishy';
 
-options.extendStructures = false; % fishy_build_conditions, if the expe 
+%options.extendStructures = false; % fishy_build_conditions, if the expe 
 % structures or the results structures need to be extended with an 
 % additional attempt
 
@@ -25,6 +26,7 @@ if nargin>1
     options.log_file = fullfile(options.result_path, 'status.txt');
     options.subject_name = participant.name;
     options.language = participant.language;
-    options.kidsOrAdults = participant.kidsOrAdults;
+    options.subject_age = participant.age;
+    options.subject_sex = participant.sex;
     options.res_filename = fullfile(options.result_path, sprintf('%s%s.mat', options.result_prefix, options.subject_name));
 end
