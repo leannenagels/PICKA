@@ -53,7 +53,7 @@ def snapshot(install_dir, snapshot_dir, code_only=True, compress=True):
     if code_only:
         copytree(install_dir, dst, ['*.m', '*.py'])
     else:
-        copytree(install_dir, dst, ['*.m', '*.py', '*.wav', '*.png', '*.jpg', '*.md'], ['tmp'])
+        copytree(install_dir, dst, ['*.m', '*.py', '*.wav', '*.png', '*.jpg', '*.md', '*.html'], ['tmp'])
 
 def copytree(src, dst, patterns, exclude=[]):
     # patterns are included
@@ -95,7 +95,7 @@ def install(src, dst, lang):
         copytree(src, dsta, ['*.m', '*.py', '*.wav', '*.png', '*.jpg', '*.md', '*.mex*'], ['tmp'])
         log.append('The copy has succeeded.')
         # Remove the language files that are not needed
-        
+
     except Exception,e:
         log.append("An error occured during the copy.")
         errors.append(e)

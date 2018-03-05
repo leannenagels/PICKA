@@ -59,7 +59,7 @@ if ~exist(res_filename, 'file')
     opt = char(questdlg(sprintf('The participant"%s" doesn''t exist. Create it?', subject), options.experiment_label,'OK','Cancel','OK'));
     switch lower(opt)
         case 'ok'
-            [training, test, options] = expe_build_conditions(options);
+            [~, options] = expe_build_conditions(options);
         case 'cancel'
             return
         otherwise

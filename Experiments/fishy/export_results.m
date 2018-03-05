@@ -85,12 +85,12 @@ switch fmt
 
                         r.subject = options.subject_name;
 
-                        r.ref_f0 = options.(phase).voices(t.ref_voice).f0;
-                        r.dir_f0 = options.(phase).voices(t.dir_voice).f0;
-                        r.ref_ser = options.(phase).voices(t.ref_voice).ser;
-                        r.dir_ser = options.(phase).voices(t.dir_voice).ser;
-                        r.ref_voice = options.(phase).voices(t.ref_voice).label;
-                        r.dir_voice = options.(phase).voices(t.dir_voice).label;
+                        r.ref_f0 = options.test.voices(t.ref_voice).f0;
+                        r.dir_f0 = options.test.voices(t.dir_voice).f0;
+                        r.ref_ser = options.test.voices(t.ref_voice).ser;
+                        r.dir_ser = options.test.voices(t.dir_voice).ser;
+                        r.ref_voice = options.test.voices(t.ref_voice).label;
+                        r.dir_voice = options.test.voices(t.dir_voice).label;
 
             %             r.vocoder = t.vocoder;
             %             if r.vocoder>0
@@ -113,13 +113,13 @@ switch fmt
                             r.threshold = mean(a.differences(i_tp));
                         end
 
-                        u_f0  = 12*log2(options.(phase).voices(t.dir_voice).f0 / options.(phase).voices(t.ref_voice).f0);
-                        u_ser = 12*log2(options.(phase).voices(t.dir_voice).ser / options.(phase).voices(t.ref_voice).ser);
+                        u_f0  = 12*log2(options.test.voices(t.dir_voice).f0 / options.test.voices(t.ref_voice).f0);
+                        u_ser = 12*log2(options.test.voices(t.dir_voice).ser / options.test.voices(t.ref_voice).ser);
                         u = [u_f0, u_ser];
                         u = u / sqrt(sum(u.^2));
 
                         r.threshold_f0 = r.threshold*u(1);
-                        r.threshold_ser = r.threshold*u(2);
+                        r.threshold_vtl = -r.threshold*u(2);
 
                         r.response_datetime = datestr(a.responses(1).timestamp, 'yyyy-mm-dd HH:MM:SS');
                         r.sd = a.sd;

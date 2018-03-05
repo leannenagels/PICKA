@@ -1,4 +1,4 @@
-function [progress, phases, participant] = expe_progress(subject_name)
+function [progress, phases, participant, res_filename] = expe_progress(subject_name)
 
 % Calculates progress for PICKA :: CRM, returns:
 %   - NaN means the file does not exist

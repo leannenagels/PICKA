@@ -72,6 +72,7 @@ switch fmt
                 continue;
             end
             
+            options = dat.options;
             results = dat.results;
             all_phases = fieldnames(results);
             

@@ -43,7 +43,7 @@ function calibration(language)
     %    'emotion/emotion'};
     %    'CRM/expe', ...
 
-    length_sample = 10;
+    length_sample = 30;
     spectrum_max  = -Inf;
 
     experiments = struct();
@@ -112,6 +112,7 @@ function calibration(language)
             end
             experiments(i).rms = rms(x);
             fprintf('   The RMS for the stimuli of this experiment is %.3f.\n', experiments(i).rms);
+            fprintf('   The sampling frequency is %d Hz.\n', fs);
             fprintf('   Converting to noise...');
             noisy_x = to_noise(x, fs);
             if length(noisy_x) < fs*length_sample
@@ -132,6 +133,7 @@ function calibration(language)
             NOISY_X = conv(NOISY_X, w, 'same');
             f = (0:length(noisy_x)-1)/(length(noisy_x)-1)*fs;
             plot(f, NOISY_X);
+            xlim([10, 11025]);
             spectrum_max = max(spectrum_max, max(NOISY_X));
             hold on
             
@@ -158,16 +160,16 @@ function calibration(language)
     hold off
     xlabel('Frequency (Hz)');
     ylabel('Magnitude (dB)');
-    xlim([10, 16000]);
+    xlim([10, 11025]);
     ylim([-70, 0]+spectrum_max);
 
 
     %---- Preparing GUI
     
     cprintf('_[.2, .7, .5]', [upper('Calibration'), '\n']);
-    fprintf('Play each sound and measure the sound level with your sound level meter (65 dB-A).\n');
-    fprintf('Adjust the gain for each experiment to reach the desired level. Once this is done,\n');
-    fprintf('click the "Save gains to files" button.\n\n');
+    fprintf('Play each sound and measure the sound level with your sound level meter.\n');
+    fprintf('Adjust the gain for each experiment to reach the desired level (65 dB-A).\n');
+    fprintf('Once this is done, click the "Save gains to files" button.\n\n');
 
     figure(102)
     screen1 = getScreens();
@@ -202,15 +204,14 @@ function calibration(language)
         if strcmp(experiments(exp_index).play_button.String, 'play')
             % We start playing the sound
             experiments(exp_index).player = audioplayer(experiments(exp_index).noise * 10^(experiments(exp_index).gain/20), experiments(exp_index).fs);
+            experiments(exp_index).player.StopFcn = {@reset_play_button, exp_index};
             experiments(exp_index).player.TimerFcn = {@play_progress, experiments(exp_index).pgax};
             experiments(exp_index).player.play();
             experiments(exp_index).play_button.String = 'stop';
         else
             % We stop the sound
             stop(experiments(exp_index).player);
-            fill([0, 1, 1, 0], [0, 0, 1, 1], 'w', 'Parent', experiments(exp_index).pgax);
-            set(experiments(exp_index).pgax, 'XLim', [0,1], 'YLim', [0,1], 'XTick', [], 'YTick', []);
-            experiments(exp_index).play_button.String = 'play';
+            reset_play_button([], [], exp_index);
         end
         
     end
@@ -220,6 +221,13 @@ function calibration(language)
         p = src.CurrentSample/src.TotalSamples;
         fill([0, p, p, 0], [0, 0, 1, 1], [.5, .5, .8], 'Parent', pgax);
         set(pgax, 'XLim', [0,1], 'YLim', [0,1], 'XTick', [], 'YTick', []);
+    end
+
+    %------------------------------------------------
+    function reset_play_button(src, event, exp_index)
+        fill([0, 1, 1, 0], [0, 0, 1, 1], 'w', 'Parent', experiments(exp_index).pgax);
+        set(experiments(exp_index).pgax, 'XLim', [0,1], 'YLim', [0,1], 'XTick', [], 'YTick', []);
+        experiments(exp_index).play_button.String = 'play';
     end
 
     %------------------------------------------------

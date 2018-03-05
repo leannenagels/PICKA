@@ -78,10 +78,10 @@ switch fmt
                     r.face = resp.trial.face;
                     r.face_gender = resp.trial.face_gender;
                     switch resp.button_clicked_label
-                        case 'buttonup'
+                        case 'buttonright'
                             r.response_same_different = 'same';
                             r.response = resp.trial.face_gender;
-                        case 'buttondown'
+                        case 'buttonwrong'
                             r.response_same_different = 'different';
                             if strcmp(resp.trial.face_gender, options.test.face_genders{1})
                                 r.response = options.test.face_genders{2};

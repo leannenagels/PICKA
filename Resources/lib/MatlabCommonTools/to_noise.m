@@ -46,5 +46,5 @@ if do_am
     y = env .* y;
 end
 
-y = y * RMS(x) / RMS(y);
+y = y * rms(x) / rms(y);
 

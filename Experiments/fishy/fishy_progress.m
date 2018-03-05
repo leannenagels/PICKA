@@ -1,4 +1,4 @@
-function [progress, phases, participant] = fishy_progress(subject_name)
+function [progress, phases, participant, res_filename] = fishy_progress(subject_name)
 
 % Calculates progress for PICKA :: Fishy, returns:
 %   - NaN means the file does not exist

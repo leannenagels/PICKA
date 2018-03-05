@@ -61,7 +61,7 @@ for i=1:length(PICKA)
     try
         fprintf('Reading progress from %s... ', PICKA(i).folder);
         PICKA(i).fx_progress = str2func(sprintf('%s_progress', PICKA(i).prefix));
-        [PICKA(i).progress, PICKA(i).phases, PICKA(i).participant] = PICKA(i).fx_progress(subject_name);
+        [PICKA(i).progress, PICKA(i).phases, PICKA(i).participant, PICKA(i).result_file] = PICKA(i).fx_progress(subject_name);
         fprintf('%f', PICKA(i).progress);
     catch err
         disp(err);
@@ -180,10 +180,6 @@ fprintf('\nRunning %s_run in %s.\n', h.UserData.PICKA(i).prefix, h.UserData.PICK
 if nargin<4
     phase = [];
 end
-
-% If phase starts with training and training has been done, then we have to
-% reset it.
-
     
 % We try to collect participant information from other experiments
 participant = struct();
@@ -207,6 +203,31 @@ while ~isfield(participant, 'language') || ~isfield(participant, 'age') || ~isfi
     participant = guiParticipantDetails(participant);
 end
 
+% If phase starts with training and training has been done, then we have to
+% reset it.
+if ~isempty(phase)
+    
+    res_file = fullfile(h.UserData.PICKA(i).folder, h.UserData.PICKA(i).result_file);
+    dat = load(res_file);
+    r = questdlg(sprintf('Are you sure you want to reset phase "%s" for subject "%s"? This cannot be undone.', phase, participant.name), 'PICKA :: Reset phase', 'yes', 'no', 'no');
+    switch r
+        case 'no'
+            return
+        case 'yes'
+            if isfield(dat.expe.(phase), 'trials')
+                for k=1:length(dat.expe.(phase).trials)
+                    dat.expe.(phase).trials(k).done = 0;
+                end
+            elseif isfield(dat.expe.(phase), 'conditions')
+                for k=1:length(dat.expe.(phase).conditions)
+                    dat.expe.(phase).conditions(k).done = 0;
+                end
+            end
+            save(res_file, '-struct', 'dat');
+            fprintf('Phase "%s" was reset to undone in file "%s".\n', phase, res_file);
+    end
+end
+
 try
     cd( h.UserData.PICKA(i).folder );
     fx_run = str2func([h.UserData.PICKA(i).prefix, '_run']);
@@ -216,13 +237,13 @@ try
     
 catch err
     cd('..');
-    close(h);
     err.rethrow();
+    close(h);
 end
     
 cd('..');
 
-close(h);
+%close(h);
 picka(participant.name);
 
 %======================================================

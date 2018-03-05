@@ -1,4 +1,4 @@
-function [progress, phases, participant] = emotion_progress(subject_name)
+function [progress, phases, participant, res_filename] = emotion_progress(subject_name)
 
 % Calculates progress for PICKA :: Emotion, returns:
 %   - NaN means the file does not exist

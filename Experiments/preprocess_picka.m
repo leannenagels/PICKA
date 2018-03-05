@@ -2,10 +2,16 @@ function preprocess_picka()
 
 participant = default_participant();
 
-fprintf('\nWould you like to preprocess all the stimuli? It takes about 5 min...\n');
+fprintf('\nWould you like to preprocess all the stimuli? It takes about 20 min...\n');
 r = input('yes | no: ', 's');
 
 r = lower(r(1));
+
+switch r
+    case 'y'
+    otherwise
+        return
+end
 
 % TODO: move these to picka_definition
 %    For each experiment, the PICKA structure will have a function call

@@ -1,4 +1,4 @@
-function [p, diagnostic, participant] = gender_progress(subject)
+function [p, diagnostic, participant, res_filename] = gender_progress(subject)
 
 % Returns the progress in the PICKA :: Gender experiment for this subject:
 %   - NaN means the file does not exist

@@ -50,7 +50,7 @@ end
 
 z = target + masker;
 
-info.masker = masker_struct();
+info.masker = masker_struct;
 
 
 
